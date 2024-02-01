@@ -1,6 +1,6 @@
 ﻿using CsvHelper.Configuration.Attributes;
 
-namespace DominosStockOrder.Server.Models
+namespace DominosStockOrder.Server.Models.Pulse
 {
     /*
     Inventory Item: (1006) Base Gluten Free
@@ -24,8 +24,9 @@ namespace DominosStockOrder.Server.Models
     public class ConsolidatedInventoryRow
     {
         [Name("Inventory Item")]
-        public string ItemName { get; set; }
+        public string ItemNameAndCode { get; set; }
 
+        [Name("Type")]
         public string Type { get; set; }
 
         [Name("Count Unit")]
