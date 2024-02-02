@@ -1,7 +1,66 @@
 ﻿@page "/"
+@using System.Net.Http.Headers
+@using System.Text.RegularExpressions
+@using Client.Models.Pulse
+@using Shared.Models.DTOs
+@using CsvHelper
+@using CsvHelper.Configuration
+@using CsvHelper.TypeConversion
+@inject HttpClient Http
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="mb-3">
+    <label for="formFile" class="form-label">Consolidated Inventory Report (Exported as TEXT)</label>
+    <InputFile class="form-control" id="formFile" OnChange="@(async (e) => await ProcessFile(e.File))" />
+</div>
 
-Welcome to your new app.
+@code {
+    private List<InventoryItemDTO> _inventoryItems = new();
+
+    private void AddItemFromRecord(ConsolidatedInventoryRow record)
+    {
+        var match = Regex.Match(record.ItemNameAndCode, @"^\(([\d\w]+)\) (.*)$");
+        var code = match.Groups[1].Value;
+        var desc = match.Groups[2].Value;
+
+        _inventoryItems.Add(new InventoryItemDTO
+        {
+            Code = code,
+            Description = desc,
+            EndingInventory = record.EndingInventory,
+            ActualUsage = record.ActualUsage,
+            IdealUsage = record.IdealUsage
+        });
+    }
+
+    private async Task ProcessFile(IBrowserFile file)
+    {
+        using var stream = file.OpenReadStream();
+        using var reader = new StreamReader(stream);
+
+        var config = CsvConfiguration.FromAttributes<ConsolidatedInventoryRow>();
+        config.BadDataFound = null;
+        config.MissingFieldFound = null;
+
+        using var csv = new CsvReader(reader, config);
+        while (await csv.ReadAsync())
+        {
+            try
+            {
+                var record = csv.GetRecord<ConsolidatedInventoryRow>();
+                AddItemFromRecord(record);
+            }
+            catch (TypeConverterException) { }
+            // We ignore this exceptions because the text file isnt uniform with just the data we need.
+            // this mostly ensures we only get the rows we care about
+        }
+
+        EnsureServerHasItemCodes();
+    }
+
+    private async Task EnsureServerHasItemCodes()
+    {
+        await Http.PostAsJsonAsync("/api/InventoryItems", _inventoryItems.Select(i => i.Code ));
+    }
+}
