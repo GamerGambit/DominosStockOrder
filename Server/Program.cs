@@ -1,5 +1,7 @@
+using DominosStockOrder.Server.Hubs;
 using DominosStockOrder.Server.Models;
 
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 
 namespace DominosStockOrder.Server
@@ -14,13 +16,30 @@ namespace DominosStockOrder.Server
 
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
+            builder.Services.AddSignalR();
+            builder.Services.AddResponseCompression(options =>
+            {
+                options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/octet-stream" });
+            });
             builder.Services.AddHttpClient();
             builder.Services.AddDbContext<StockOrderContext>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.WithOrigins("https://purchasing.dominos.com.au")
+                    .AllowAnyHeader()
+                    .WithMethods("GET", "POST")
+                    .AllowCredentials();
+                });
+            });
+
             var app = builder.Build();
+            app.UseResponseCompression();
 
             using (var scope = app.Services.CreateScope())
             {
@@ -47,9 +66,11 @@ namespace DominosStockOrder.Server
             app.UseStaticFiles();
 
             app.UseAuthorization();
+            app.UseCors();
 
             app.MapRazorPages();
             app.MapControllers();
+            app.MapHub<PurchasingHub>("/purchasinghub");
             app.MapFallbackToFile("index.html");
 
             app.Run();
