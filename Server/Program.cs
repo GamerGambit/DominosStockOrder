@@ -2,6 +2,7 @@ using DominosStockOrder.Server.Hubs;
 using DominosStockOrder.Server.Models;
 
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace DominosStockOrder.Server
@@ -26,6 +27,10 @@ namespace DominosStockOrder.Server
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.Configure<HubOptions>(options =>
+            {
+                options.MaximumReceiveMessageSize = 65535;
+            });
 
             builder.Services.AddCors(options =>
             {
