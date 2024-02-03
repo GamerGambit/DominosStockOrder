@@ -1,5 +1,6 @@
 using DominosStockOrder.Server.Hubs;
 using DominosStockOrder.Server.Models;
+using DominosStockOrder.Server.Services;
 
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.SignalR;
@@ -24,6 +25,8 @@ namespace DominosStockOrder.Server
             });
             builder.Services.AddHttpClient();
             builder.Services.AddDbContext<StockOrderContext>();
+            builder.Services.AddSingleton<IInventoryUpdaterService, InventoryUpdaterService>();
+            builder.Services.AddSingleton<IPendingOrdersCacheService, PendingOrdersCacheService>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
