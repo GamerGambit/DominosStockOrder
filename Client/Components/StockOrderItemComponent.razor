@@ -1,0 +1,72 @@
+﻿@using DominosStockOrder.Shared.ViewModels
+
+<div class="row mt-1 striped @ExtraClass">
+    <div class="col-1 my-auto">@Item.PulseCode</div>
+    <div class="col my-auto">@Item.Description</div>
+    <div class="col-2 my-auto"><input type="text" inputmode="numeric" class="form-control" @bind="@Item.FinalOrder" /></div>
+    @if (_problems.Any())
+    {
+        foreach (var problem in _problems)
+        {
+            <div>
+                <span class="d-block">@problem</span>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public StockOrderRequestItemVM Item { get; set; }
+
+    private bool _bErrorOccurred = false;
+    private string ExtraClass => !_problems.Any() ? string.Empty : _bErrorOccurred ? "alert-danger" : "alert-warning";
+    private List<string> _problems = [];
+
+    protected override void OnParametersSet()
+    {
+        _problems.Clear();
+        _bErrorOccurred = false;
+        
+        if (Item.DatabaseInfo is null)
+        {
+            _problems.Add("Item does not exist in database");
+            _bErrorOccurred = true;
+        }
+        else
+        {
+            if (Item.DatabaseInfo.Code != Item.PulseCode)
+            {
+                _problems.Add($"Pulse codes mismatched {Item.DatabaseInfo.Code} | {Item.PulseCode}");
+                _bErrorOccurred = true;
+            }
+
+            if (Item.DatabaseInfo.PackSize != Item.PackSize && !Item.DatabaseInfo.ManualCount)
+            {
+                _problems.Add($"Pack size mismatched {Item.DatabaseInfo.PackSize} | {Item.PackSize}");
+                _bErrorOccurred = true;
+            }
+        }
+
+        if (Item.IsNewInventory)
+        {
+            _problems.Add("New Item");
+        }
+
+        if (Item.IsPackSizeUpdated)
+        {
+            _problems.Add($"Pack size changed to {Item.PackSize}");
+        }
+
+        if (Item.IsItemEnabledRecently)
+        {
+            _problems.Add("Item added recently");
+        }
+
+        if (Item.IsItemCodeChangedRecently)
+        {
+            _problems.Add("Item code changed recently");
+        }
+    }
+
+}

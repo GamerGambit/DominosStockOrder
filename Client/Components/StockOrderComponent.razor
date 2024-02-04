@@ -1,0 +1,114 @@
+﻿@using DominosStockOrder.Shared.ViewModels
+@using DominosStockOrder.Shared.Models.Purchasing
+@inject HttpClient Http
+
+@if (_orders is not null && _orders.Any())
+{
+    <div class="mb-3">
+        <InputSelect @bind-Value="_selectedOrder" disabled="@(_orders.Count() == 1)" class="form-select">
+            @foreach (var order in _orders)
+            {
+                <option value="@order">@order.DeliveryDate.ToString("D")</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div class="container mb-3">
+        @if (_selectedOrder is not null)
+        {
+            var grouped = _selectedOrder.Items.GroupBy(i => i.DatabaseInfo.ManualCount);
+            var selected = grouped.Select(g => new
+            {
+                IsManualCount = g.Key,
+                Items = g.AsEnumerable()
+            });
+
+            <div class="accordion" id="orderItems">
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="suggestedHeading">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#suggested" aria-expanded="true" aria-controls="suggested">
+                            Suggested Products
+                        </button>
+                    </h2>
+                    <div id="suggested" class="accordion-collapse collapse show" aria-labelledby="suggestedHeading" data-bs-parent="#orderItems">
+                        <div class="accordion-body">
+                            <div class="row">
+                                <div class="col-1 fw-bold">Code</div>
+                                <div class="col fw-bold">Description</div>
+                                <div class="col-2 fw-bold">Final Order</div>
+                            </div>
+                            @foreach (var item in selected.Where(x => !x.IsManualCount).SelectMany(x => x.Items))
+                            {
+                                <StockOrderItemComponent Item=item/>
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#manual" aria-expanded="true" aria-controls="manual">
+                            Manual Count Products
+                        </button>
+                    </h2>
+                    <div id="manual" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#orderItems">
+                        <div class="accordion-body">
+                            <div class="row">
+                                <div class="col-1 fw-bold">Code</div>
+                                <div class="col fw-bold">Description</div>
+                                <div class="col-2 fw-bold">Final Order</div>
+                            </div>
+                            @foreach (var item in selected.Where(x => x.IsManualCount).SelectMany(x => x.Items))
+                            {
+                                <StockOrderItemComponent Item=item/>
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        }
+    </div>
+    
+    <div class="container mb-3">
+        <button class="btn btn-primary w-100" @onclick="SaveOrderToPortal" disabled="@_saveButtonDisable">Save Order to Portal</button>
+    </div>
+}
+
+@code {
+    private IEnumerable<StockOrderRequestVM>? _orders = null;
+    private StockOrderRequestVM? _selectedOrder = null;
+    private bool _saveButtonDisable = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _orders = await Http.GetFromJsonAsync<IEnumerable<StockOrderRequestVM>>("/api/PendingOrders");
+
+        if (_orders is not null && _orders.Any())
+        {
+            _selectedOrder = _orders.First();
+        }
+    }
+
+    private async Task SaveOrderToPortal()
+    {
+        if (_selectedOrder is null)
+            return;
+
+        _saveButtonDisable = true;
+
+        var transformedOrder = new OrderResponse
+        {
+            PurchaseOrderId = _selectedOrder.PurchaseOrderId,
+            Items = _selectedOrder.Items.Select(i => new OrderResponseItem
+            {
+                PurchaseOrderItemId = i.PurchaseOrderItemId,
+                Override = i.FinalOrder
+            })
+        };
+
+        await Http.PostAsJsonAsync("/api/PendingOrders", transformedOrder);
+    }
+
+}

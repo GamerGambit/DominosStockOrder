@@ -101,3 +101,7 @@ a, .btn-link {
 code {
     color: #c02d76;
 }
+
+.striped:not(.alert-warning):not(.alert-danger):nth-child(even) {
+    background-color: rgba(var(--bs-black-rgb), 0.1);
+}

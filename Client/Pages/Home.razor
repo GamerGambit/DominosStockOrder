@@ -2,6 +2,7 @@
 @using System.Net.Http.Headers
 @using System.Text.RegularExpressions
 @using Client.Models.Pulse
+@using DominosStockOrder.Client.Components
 @using Shared.Models.DTOs
 @using CsvHelper
 @using CsvHelper.Configuration
@@ -15,8 +16,10 @@
     <InputFile class="form-control" id="formFile" OnChange="@(async (e) => await ProcessFile(e.File))" />
 </div>
 
+<StockOrderComponent/>
+
 @code {
-    private List<InventoryItemDTO> _inventoryItems = new();
+    private readonly List<InventoryItemDTO> _inventoryItems = [];
 
     private void AddItemFromRecord(ConsolidatedInventoryRow record)
     {
@@ -56,11 +59,6 @@
             // this mostly ensures we only get the rows we care about
         }
 
-        await EnsureServerHasItemCodes();
-    }
-
-    private async Task EnsureServerHasItemCodes()
-    {
-        await Http.PostAsJsonAsync("/api/InventoryItems", _inventoryItems.Select(i => i.Code ));
+        StateHasChanged();
     }
 }
