@@ -26,7 +26,7 @@ namespace DominosStockOrder.Server.Services
             var context = scope.ServiceProvider.GetRequiredService<StockOrderContext>();
 
             var pulseCode = GetPulseCode(code);
-            var item = context.InventoryItems.Find(pulseCode);
+            var item = await context.InventoryItems.FindAsync(pulseCode);
 
             if (item is null)
             {
