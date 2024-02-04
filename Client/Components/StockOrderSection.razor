@@ -1,0 +1,36 @@
+﻿@using DominosStockOrder.Shared.ViewModels
+
+<div class="accordion-item">
+    <h2 class="accordion-header" id="@(UniqueId)Heading">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#@UniqueId" aria-expanded="true" aria-controls="suggested">
+            @Title
+        </button>
+    </h2>
+    <div id="@UniqueId" class="accordion-collapse collapse @(StartShown ? "show" : string.Empty)" aria-labelledby="@(UniqueId)Heading" data-bs-parent="#orderItems">
+        <div class="accordion-body">
+            <div class="row">
+                <div class="col-1 fw-bold">Code</div>
+                <div class="col fw-bold">Description</div>
+                <div class="col-2 fw-bold">Final Order</div>
+            </div>
+            @foreach (var item in Items)
+            {
+                <StockOrderItemComponent Item=item/>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public IEnumerable<StockOrderRequestItemVM> Items { get; set; }
+    
+    [Parameter]
+    public string UniqueId { get; set; }
+    
+    [Parameter]
+    public string Title { get; set; }
+    
+    [Parameter]
+    public bool StartShown { get; set; } = true;
+}

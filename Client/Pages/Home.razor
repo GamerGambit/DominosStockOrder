@@ -16,7 +16,7 @@
     <InputFile class="form-control" id="formFile" OnChange="@(async (e) => await ProcessFile(e.File))" />
 </div>
 
-<StockOrderComponent/>
+<StockOrderSelectorComponent/>
 
 @code {
     private readonly List<InventoryItemDTO> _inventoryItems = [];

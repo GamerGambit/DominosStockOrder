@@ -1,0 +1,63 @@
+﻿@using DominosStockOrder.Shared.ViewModels
+@using DominosStockOrder.Shared.Models.Purchasing
+@inject HttpClient Http
+
+@if (_orders is not null && _orders.Any())
+{
+    <div class="mb-3">
+        <InputSelect @bind-Value="_selectedOrder" disabled="@(_orders.Count() == 1)" class="form-select">
+            @foreach (var order in _orders)
+            {
+                <option value="@order">@order.DeliveryDate.ToString("D")</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div class="container mb-3">
+        @if (_selectedOrder is not null)
+        {
+            <StockOrderComponent Order=_selectedOrder />
+        }
+    </div>
+    
+    <div class="container mb-3">
+        <button class="btn btn-primary w-100" @onclick="SaveOrderToPortal" disabled="@_saveButtonDisable">Save Order to Portal</button>
+    </div>
+}
+
+@code {
+    private IEnumerable<StockOrderRequestVM>? _orders = null;
+    private StockOrderRequestVM? _selectedOrder = null;
+    private bool _saveButtonDisable = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _orders = await Http.GetFromJsonAsync<IEnumerable<StockOrderRequestVM>>("/api/PendingOrders");
+
+        if (_orders is not null && _orders.Any())
+        {
+            _selectedOrder = _orders.First();
+        }
+    }
+
+    private async Task SaveOrderToPortal()
+    {
+        if (_selectedOrder is null)
+            return;
+
+        _saveButtonDisable = true;
+
+        var transformedOrder = new OrderResponse
+        {
+            PurchaseOrderId = _selectedOrder.PurchaseOrderId,
+            Items = _selectedOrder.Items.Select(i => new OrderResponseItem
+            {
+                PurchaseOrderItemId = i.PurchaseOrderItemId,
+                Override = i.FinalOrder
+            })
+        };
+
+        await Http.PostAsJsonAsync("/api/PendingOrders", transformedOrder);
+    }
+
+}
