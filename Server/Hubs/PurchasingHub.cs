@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace DominosStockOrder.Server.Hubs
 {
-    public class PurchasingHub : Hub
+    public class PurchasingHub : Hub<IPurchasingClient>
     {
         public async Task SetPendingOrders(IEnumerable<OrderRequest> orders, IInventoryUpdaterService inventoryUpdater, IPendingOrdersCacheService pendingOrdersCache)
         {
@@ -27,7 +27,7 @@ namespace DominosStockOrder.Server.Hubs
 
         public async Task PlaceOrder(OrderResponse order)
         {
-            await Clients.All.SendAsync("PlaceOrder", order);
+            await Clients.All.PlaceOrder(order);
         }
     }
 }
