@@ -21,7 +21,7 @@ namespace DominosStockOrder.Server.Hubs
 
             foreach (var item in order.Items)
             {
-                await inventoryUpdater.AddOrUpdateInventoryItem(item.PurchaseOrderItemId, item.Code, item.PackSizeQuantity);
+                await inventoryUpdater.AddOrUpdateInventoryItem(item.PurchaseOrderItemId, item.Code, item.Description, item.PackSizeQuantity);
             }
         }
 

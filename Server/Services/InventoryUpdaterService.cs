@@ -20,7 +20,7 @@ namespace DominosStockOrder.Server.Services
             _logger = logger;
         }
 
-        public async Task AddOrUpdateInventoryItem(string purchaseOrderItemId, string code, float packSize)
+        public async Task AddOrUpdateInventoryItem(string purchaseOrderItemId, string code, string description, float packSize)
         {
             using var scope = _serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<StockOrderContext>();
@@ -34,6 +34,7 @@ namespace DominosStockOrder.Server.Services
                 await context.InventoryItems.AddAsync(new InventoryItem
                 {
                     Code = pulseCode,
+                    Description = description,
                     PortalItemId = purchaseOrderItemId,
                     PackSize = packSize
                 });

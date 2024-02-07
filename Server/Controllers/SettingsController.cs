@@ -23,6 +23,7 @@ public class SettingsController : ControllerBase
         return _context.InventoryItems.Select(i => new InventoryItemVM
         {
             Code = i.Code,
+            Description = i.Description,
             Multiplier = i.Multiplier,
             PackSize = i.PackSize,
             ManualCount = i.ManualCount

@@ -7,6 +7,8 @@ namespace DominosStockOrder.Server.Models
         [Key]
         public required string Code { get; set; }
         public string? PortalItemId { get; set; }
+        
+        public string Description { get; set; }
 
         public float PackSize { get; set; }
         public float Multiplier { get; set; }
