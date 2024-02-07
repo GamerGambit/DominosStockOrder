@@ -1,0 +1,48 @@
+﻿@page "/Settings"
+@using DominosStockOrder.Client.Components
+@using DominosStockOrder.Shared.ViewModels
+@inject HttpClient Http
+
+<div class="container mb-3">
+@if (_bLoading)
+{
+    <p>Loading items...</p>
+}
+else if (_items is null)
+{
+    <p>No items in database</p>
+}
+else
+{
+    <div class="d-flex row sticky-top mb-3 bg-secondary p-2">
+        <div class="col fw-bold">Code</div>
+        <div class="col fw-bold">Pack size</div>
+        <div class="col fw-bold">Multiplier</div>
+        <div class="col fw-bold">Manual Count</div>
+    </div>
+
+    @foreach (var item in _items)
+    {
+        <SettingsItemComponent Item=item />
+    }
+    
+    <button class="btn btn-primary mt-3 w-100" @onclick="@SaveChanges">Save Changes</button>
+}
+</div>
+
+@code {
+    private bool _bLoading = true;
+    private IEnumerable<InventoryItemVM>? _items;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        _bLoading = true;
+        _items = await Http.GetFromJsonAsync<IEnumerable<InventoryItemVM>>("/api/Settings");
+        _bLoading = false;
+    }
+
+    private async Task SaveChanges()
+    {
+        await Http.PutAsJsonAsync("/api/Settings", _items);
+    }
+}

@@ -105,3 +105,11 @@ code {
 .striped:not(.alert-warning):not(.alert-danger):nth-child(even) {
     background-color: rgba(var(--bs-black-rgb), 0.1);
 }
+
+.scale2
+{
+    -ms-transform: scale(2); /* IE */
+    -moz-transform: scale(2); /* FF */
+    -webkit-transform: scale(2); /* Safari and Chrome */
+    -o-transform: scale(2); /* Opera */
+}
