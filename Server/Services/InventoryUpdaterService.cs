@@ -36,7 +36,8 @@ namespace DominosStockOrder.Server.Services
                     Code = pulseCode,
                     Description = description,
                     PortalItemId = purchaseOrderItemId,
-                    PackSize = packSize
+                    PackSize = packSize,
+                    Multiplier = 1
                 });
 
                 await context.SaveChangesAsync();
