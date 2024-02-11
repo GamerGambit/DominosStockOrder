@@ -7,7 +7,9 @@
 @using CsvHelper
 @using CsvHelper.Configuration
 @using CsvHelper.TypeConversion
+@using DominosStockOrder.Client.Services
 @inject HttpClient Http
+@inject InventoryService Inventory;
 
 <PageTitle>Home</PageTitle>
 
@@ -19,15 +21,13 @@
 <StockOrderSelectorComponent/>
 
 @code {
-    private readonly List<InventoryItemDTO> _inventoryItems = [];
-
     private void AddItemFromRecord(ConsolidatedInventoryRow record)
     {
         var match = Regex.Match(record.ItemNameAndCode, @"^\(([\d\w]+)\) (.*)$");
         var code = match.Groups[1].Value;
         var desc = match.Groups[2].Value;
 
-        _inventoryItems.Add(new InventoryItemDTO
+        Inventory.AddItem(new InventoryItemDTO
         {
             Code = code,
             Description = desc,
