@@ -5,7 +5,6 @@
         public string Code { get; set; }
         public string Description { get; set; }
         public float EndingInventory { get; set; }
-        public float ActualUsage { get; set; }
         public float IdealUsage { get; set; }
     }
 }
