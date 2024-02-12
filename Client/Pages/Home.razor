@@ -9,7 +9,7 @@
 @using CsvHelper.TypeConversion
 @using DominosStockOrder.Client.Services
 @inject HttpClient Http
-@inject InventoryService Inventory;
+@inject IInventoryService Inventory;
 
 <PageTitle>Home</PageTitle>
 
@@ -53,9 +53,20 @@
                 var record = csv.GetRecord<ConsolidatedInventoryRow>();
                 AddItemFromRecord(record);
             }
-            catch (TypeConverterException) { }
-            // We ignore this exceptions because the text file isnt uniform with just the data we need.
-            // this mostly ensures we only get the rows we care about
+            catch (TypeConverterException)
+            {
+                // We ignore this exceptions because the text file isnt uniform with just the data we need.
+                // this mostly ensures we only get the rows we care about
+                
+                if (csv.TryGetField<DateTime?>(4, out var startDate) && startDate is not null && Inventory.StartDate is null)
+                {
+                    Inventory.StartDate = startDate.Value;
+                }
+                else if (csv.TryGetField<DateTime?>(1, out var endDate) && endDate is not null && Inventory.EndDate is null)
+                {
+                    Inventory.EndDate = endDate.Value;
+                }
+            }
         }
 
         StateHasChanged();

@@ -2,7 +2,7 @@
 
 namespace DominosStockOrder.Client.Services;
 
-public class InventoryService
+public class InventoryService : IInventoryService
 {
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
