@@ -17,6 +17,5 @@ namespace DominosStockOrder.Server.Models
             optionsBuilder.UseSqlite(_config.GetConnectionString("SqliteDB"));
         }
         public DbSet<InventoryItem> InventoryItems { get; set; }
-        public DbSet<StockOrder> StockOrders { get; set; }
     }
 }
