@@ -10,6 +10,8 @@ public interface IInventoryService
 
     IEnumerable<InventoryItemDTO> GetItems();
 
+    void Reset();
+
     /// <summary>
     /// Gets the `Ideal Usage` for the supplied inventory code.
     /// </summary>

@@ -45,6 +45,8 @@
         var config = CsvConfiguration.FromAttributes<ConsolidatedInventoryRow>();
         config.BadDataFound = null;
         config.MissingFieldFound = null;
+        
+        Inventory.Reset();
 
         using var csv = new CsvReader(reader, config);
         while (await csv.ReadAsync())

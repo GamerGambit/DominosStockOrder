@@ -13,6 +13,13 @@ public class InventoryService : IInventoryService
         Items.Add(item);
     }
 
+    public void Reset()
+    {
+        StartDate = null;
+        EndDate = null;
+        Items.Clear();
+    }
+
     public IEnumerable<InventoryItemDTO> GetItems() => Items;
 
     /// <summary>
