@@ -13,6 +13,9 @@ public class InventoryService : IInventoryService
         Items.Add(item);
     }
 
+    public event EventHandler DataImported;
+    public void OnDataImported() => DataImported?.Invoke(this, EventArgs.Empty);
+
     public void Reset()
     {
         StartDate = null;

@@ -8,6 +8,9 @@ public interface IInventoryService
     DateTime? EndDate { get; set; }
     void AddItem(InventoryItemDTO item);
 
+    event EventHandler DataImported;
+    void OnDataImported();
+
     IEnumerable<InventoryItemDTO> GetItems();
 
     void Reset();

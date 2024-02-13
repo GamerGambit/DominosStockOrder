@@ -72,12 +72,12 @@
             }
         }
 
+        Inventory.OnDataImported();
+
         if (Inventory.ShouldImportFoodTheo())
         {
             await SendFoodTheo();
         }
-
-        StateHasChanged();
     }
 
     async Task SendFoodTheo()

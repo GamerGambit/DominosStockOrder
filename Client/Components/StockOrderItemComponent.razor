@@ -1,4 +1,7 @@
 ﻿@using DominosStockOrder.Shared.ViewModels
+@using DominosStockOrder.Client.Services
+@inject IInventoryService Inventory
+@implements IDisposable
 
 <div class="row mb-1 striped @ExtraClass">
     <div class="col-1 my-auto">@Item.PulseCode</div>
@@ -22,6 +25,16 @@
     private bool _bErrorOccurred = false;
     private string ExtraClass => !_problems.Any() ? string.Empty : _bErrorOccurred ? "alert-danger" : "alert-warning";
     private List<string> _problems = [];
+
+    private void DataImportedCallback(object? sender, EventArgs e) => CalculateFinalOrder();
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Inventory.DataImported += DataImportedCallback;
+        }
+    }
 
     protected override void OnParametersSet()
     {
@@ -67,6 +80,51 @@
         {
             _problems.Add("Item code changed recently");
         }
+    }
+
+    private void CalculateFinalOrder()
+    {
+        Console.WriteLine($"CalculateFinalOrder {Item?.Description} | {Item?.DatabaseInfo?.Multiplier}");
+        if (Item.DatabaseInfo is null || Item.DatabaseInfo.ManualCount || Item.RollingAverage is null || !Inventory.GetCurrentStockForItemCode(Item.PulseCode, out var currentStock))
+            return;
+
+        const int originIdeal = 0;
+        const int inTransit = 0;
+
+        var soldLastWeekTotal = Item.RollingAverage.Value * Item.DatabaseInfo.Multiplier + originIdeal;
+        var totalInStoreInTransit = currentStock + inTransit;
+        var totalNeeded = totalInStoreInTransit - soldLastWeekTotal;
+        var unitsRequired = totalNeeded / Item.DatabaseInfo.PackSize; // `unitsRequired` is negative since its the difference between what we have and what we sold
+
+        var sign = MathF.Sign(unitsRequired);
+        
+        Console.WriteLine(Item.Description);
+        Console.WriteLine($"\tSold Last Week: {Item.RollingAverage}");
+        Console.WriteLine($"\tToday Opening: {currentStock}");
+        Console.WriteLine($"\tSold Last Week Total: {soldLastWeekTotal}");
+        Console.WriteLine($"\tTotal In Store/Transit: {totalInStoreInTransit}");
+        Console.WriteLine($"\tTotal Stock Needed: {totalNeeded}");
+        Console.WriteLine($"\tUnits Required: {unitsRequired}");
+        Console.WriteLine($"\tPack Size: {Item.DatabaseInfo.PackSize}");
+        Console.WriteLine($"\tMultiplier: {Item.DatabaseInfo.Multiplier}");
+
+        // If unitsRequired is positive it means we dont need anything as we have more in store than what we used.
+        if (sign >= 0)
+        {
+            Item.FinalOrder = 0;
+        }
+        else
+        {
+            Item.FinalOrder = (int)Math.Abs(Math.Round(unitsRequired));
+        }
+
+        Console.WriteLine($"\tFinal order: {Item.FinalOrder}\n");
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        Inventory.DataImported -= DataImportedCallback;
     }
 
 }
