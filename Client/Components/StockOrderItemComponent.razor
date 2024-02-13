@@ -1,6 +1,9 @@
 ﻿@using DominosStockOrder.Shared.ViewModels
 @using DominosStockOrder.Client.Services
+@using DominosStockOrder.Shared
+@using System.Text.Json
 @inject IInventoryService Inventory
+@inject HttpClient Http
 @implements IDisposable
 
 <div class="row mb-1 striped @ExtraClass">
@@ -16,6 +19,18 @@
             </div>
         }
     }
+    @if (Item.NumAverageWeeks != Constants.NumFoodTheoWeeks)
+    {
+        <div class="row mb-3">
+            <span class="d-block">Insufficient food theo data. Please enter an initial weekly theo</span>
+            <div class="col-2">
+                <input type="text" inputmode="numeric" class="form-control" @bind="@_initialFoodTheo"/>
+            </div>
+            <div class="col">
+                <button class="btn btn-primary" @onclick="@OnWeeklyFoodTheoSet">Set</button>
+            </div>
+        </div>
+    }
 </div>
 
 @code {
@@ -23,8 +38,10 @@
     public StockOrderRequestItemVM Item { get; set; }
 
     private bool _bErrorOccurred = false;
-    private string ExtraClass => !_problems.Any() ? string.Empty : _bErrorOccurred ? "alert-danger" : "alert-warning";
+    private string ExtraClass => (!_problems.Any() || Item?.NumAverageWeeks >= Constants.NumFoodTheoWeeks) ? string.Empty : _bErrorOccurred ? "alert-danger" : "alert-warning";
     private List<string> _problems = [];
+    private float _initialFoodTheo;
+    private float? initialRollingAvg = null;
 
     private void DataImportedCallback(object? sender, EventArgs e) => CalculateFinalOrder();
 
@@ -127,4 +144,15 @@
         Inventory.DataImported -= DataImportedCallback;
     }
 
+    private async Task OnWeeklyFoodTheoSet()
+    {
+        initialRollingAvg ??= Item.RollingAverage;
+        
+        Item.RollingAverage = (_initialFoodTheo * (Constants.NumFoodTheoWeeks - Item.NumAverageWeeks) + initialRollingAvg) / Constants.NumFoodTheoWeeks;
+        Item.NumAverageWeeks = Constants.NumFoodTheoWeeks;
+
+        await Http.PutAsJsonAsync($"api/FoodTheo/Initial/{Item.PulseCode}", JsonSerializer.Serialize(_initialFoodTheo));
+
+        CalculateFinalOrder();
+    }
 }

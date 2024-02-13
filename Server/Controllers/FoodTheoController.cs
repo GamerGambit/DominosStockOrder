@@ -1,4 +1,5 @@
 ﻿using DominosStockOrder.Server.Models;
+using DominosStockOrder.Shared;
 using DominosStockOrder.Shared.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,12 +9,34 @@ namespace DominosStockOrder.Server.Controllers;
 [ApiController]
 public class FoodTheoController : Controller
 {
-    private const int NumWeeks = 8; // How many weeks should we track?
     private readonly StockOrderContext _context;
 
     public FoodTheoController(StockOrderContext context)
     {
         _context = context;
+    }
+
+    // PUT
+    [HttpPut("initial/{pulseCode}")]
+    public async Task PutInitial(string pulseCode, [FromBody] float initialWeeklyTheo)
+    {
+        var avgs = _context.ItemAverages.Where(ia => ia.ItemCode == pulseCode).Select(ia => ia.WeekEnding).OrderBy(we => we).ToList();
+        var diff = Constants.NumFoodTheoWeeks - avgs.Count;
+
+        var useWkEnding = avgs.Any() ? avgs.First() : DateTime.Now;
+
+        for (int i = 0; i < diff; ++i)
+        {
+            useWkEnding -= TimeSpan.FromDays(6); // go back 1 week each time
+            _context.ItemAverages.Add(new ItemAverages
+            {
+                ItemCode = pulseCode,
+                WeekEnding = useWkEnding,
+                FoodTheo = initialWeeklyTheo
+            });
+        }
+
+        await _context.SaveChangesAsync();
     }
 
     // PUT
@@ -40,7 +63,7 @@ public class FoodTheoController : Controller
 
     private void PruneOldFoodTheo()
     {
-        var pruneList = _context.ItemAverages.GroupBy(ia => ia.ItemCode).Where(g => g.Count() > NumWeeks)
+        var pruneList = _context.ItemAverages.GroupBy(ia => ia.ItemCode).Where(g => g.Count() > Constants.NumFoodTheoWeeks)
             .Select(g => g.OrderBy(ia => ia.WeekEnding).First()).ToList();
 
         _context.RemoveRange(pruneList);

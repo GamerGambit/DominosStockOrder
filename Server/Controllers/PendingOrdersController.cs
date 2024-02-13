@@ -49,7 +49,8 @@ namespace DominosStockOrder.Server.Controllers
                         IsItemEnabledRecently = i.IsItemEnabledRecently,
                         IsItemCodeChangedRecently = i.IsItemCodeChangedRecently,
                         DatabaseInfo = await GetItemInfo(pulseCode),
-                        RollingAverage = averages.Count != 0 ? averages.Average(ia => ia.FoodTheo) : null
+                        RollingAverage = averages.Count != 0 ? averages.Average(ia => ia.FoodTheo) : null,
+                        NumAverageWeeks = averages.Count
                     };
                 }).Select(t => t.Result)
             });
