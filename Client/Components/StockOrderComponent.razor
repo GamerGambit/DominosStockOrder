@@ -21,8 +21,8 @@
             Items = g.AsEnumerable()
         });
 
-        _suggestedItems = selected.Where(x => !x.IsManualCount).SelectMany(x => x.Items);
-        _manualItems = selected.Where(x => x.IsManualCount).SelectMany(x => x.Items);
+        _suggestedItems = selected.Where(x => !x.IsManualCount).SelectMany(x => x.Items).ToList();
+        _manualItems = selected.Where(x => x.IsManualCount).SelectMany(x => x.Items).ToList();
     }
 
 }
