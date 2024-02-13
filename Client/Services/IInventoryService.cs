@@ -8,6 +8,8 @@ public interface IInventoryService
     DateTime? EndDate { get; set; }
     void AddItem(InventoryItemDTO item);
 
+    IEnumerable<InventoryItemDTO> GetItems();
+
     /// <summary>
     /// Gets the `Ideal Usage` for the supplied inventory code.
     /// </summary>

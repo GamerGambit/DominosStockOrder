@@ -13,6 +13,8 @@ public class InventoryService : IInventoryService
         Items.Add(item);
     }
 
+    public IEnumerable<InventoryItemDTO> GetItems() => Items;
+
     /// <summary>
     /// Gets the `Ideal Usage` for the supplied inventory code.
     /// </summary>
