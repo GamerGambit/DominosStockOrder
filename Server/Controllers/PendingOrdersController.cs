@@ -35,6 +35,7 @@ namespace DominosStockOrder.Server.Controllers
                 Items = o.Items.Select(async i =>
                 {
                     var pulseCode = Regex.Replace(i.Code, @"\D+$", string.Empty);
+                    var averages = _context.ItemAverages.Where(ia => ia.ItemCode == pulseCode).ToList();
                     return new StockOrderRequestItemVM
                     {
                         PurchaseOrderItemId = i.PurchaseOrderItemId,
@@ -47,7 +48,8 @@ namespace DominosStockOrder.Server.Controllers
                         IsPackSizeUpdated = i.IsPacksizeupdated,
                         IsItemEnabledRecently = i.IsItemEnabledRecently,
                         IsItemCodeChangedRecently = i.IsItemCodeChangedRecently,
-                        DatabaseInfo = await GetItemInfo(pulseCode)
+                        DatabaseInfo = await GetItemInfo(pulseCode),
+                        RollingAverage = averages.Count != 0 ? averages.Average(ia => ia.FoodTheo) : null
                     };
                 }).Select(t => t.Result)
             });

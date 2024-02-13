@@ -13,4 +13,5 @@ public class StockOrderRequestItemVM
     public bool IsItemEnabledRecently { get; set; }
     public bool IsItemCodeChangedRecently { get; set; }
     public StockOrderRequestItemDatabaseInfo? DatabaseInfo { get; set; }
+    public float? RollingAverage { get; set; }
 }
