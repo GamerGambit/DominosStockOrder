@@ -33,11 +33,7 @@
     protected override async Task OnInitializedAsync()
     {
         _orders = await Http.GetFromJsonAsync<IEnumerable<StockOrderRequestVM>>("/api/PendingOrders");
-
-        if (_orders is not null && _orders.Any())
-        {
-            _selectedOrder = _orders.First();
-        }
+         _selectedOrder = _orders?.FirstOrDefault();
     }
 
     private async Task SaveOrderToPortal()
