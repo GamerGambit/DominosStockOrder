@@ -8,6 +8,7 @@
 @using CsvHelper.Configuration
 @using CsvHelper.TypeConversion
 @using DominosStockOrder.Client.Services
+@using DominosStockOrder.Shared.ViewModels
 @inject HttpClient Http
 @inject IInventoryService Inventory;
 
@@ -69,6 +70,26 @@
             }
         }
 
+        if (Inventory.ShouldImportFoodTheo())
+        {
+            await SendFoodTheo();
+        }
+
         StateHasChanged();
+    }
+
+    async Task SendFoodTheo()
+    {
+        var vm = new FoodTheoVM
+        {
+            WeekEnding = Inventory.EndDate.Value,
+            ItemTheos = Inventory.GetItems().Select(dto => new InventoryItemFoodTheoVM
+            {
+                PulseCode = dto.Code,
+                IdealUsage = dto.IdealUsage
+            })
+        };
+
+        await Http.PutAsJsonAsync("/api/FoodTheo", vm);
     }
 }
