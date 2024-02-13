@@ -15,7 +15,7 @@
             </div>
             @foreach (var item in Items)
             {
-                <StockOrderItemComponent Item=item/>
+                <StockOrderItemComponent @key="@item.PulseCode" Item=item/>
             }
         </div>
     </div>
