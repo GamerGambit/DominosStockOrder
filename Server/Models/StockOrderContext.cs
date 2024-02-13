@@ -16,6 +16,8 @@ namespace DominosStockOrder.Server.Models
             base.OnConfiguring(optionsBuilder);
             optionsBuilder.UseSqlite(_config.GetConnectionString("SqliteDB"));
         }
+
         public DbSet<InventoryItem> InventoryItems { get; set; }
+        public DbSet<ItemAverages> ItemAverages { get; set; }
     }
 }
