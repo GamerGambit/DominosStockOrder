@@ -27,6 +27,7 @@ namespace DominosStockOrder.Server
             builder.Services.AddDbContext<StockOrderContext>();
             builder.Services.AddSingleton<IInventoryUpdaterService, InventoryUpdaterService>();
             builder.Services.AddSingleton<IPendingOrdersCacheService, PendingOrdersCacheService>();
+            builder.Services.AddHostedService<FirefoxService>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
