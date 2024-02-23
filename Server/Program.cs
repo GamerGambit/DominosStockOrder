@@ -1,5 +1,6 @@
 using DominosStockOrder.Server.Hubs;
 using DominosStockOrder.Server.Models;
+using DominosStockOrder.Server.PulseApi;
 using DominosStockOrder.Server.Services;
 
 using Microsoft.AspNetCore.ResponseCompression;
@@ -24,10 +25,20 @@ namespace DominosStockOrder.Server
                 options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/octet-stream" });
             });
             builder.Services.AddHttpClient();
+            builder.Services.AddHttpClient("PulseApiHttpClient", (services, client) => {
+                var config = services.GetRequiredService<IConfiguration>();
+                var pulseUrl = config.GetValue("PulseApiUrl", "https://pulseapi");
+                client.BaseAddress = new Uri(pulseUrl!);
+            });
             builder.Services.AddDbContext<StockOrderContext>();
             builder.Services.AddSingleton<IInventoryUpdaterService, InventoryUpdaterService>();
             builder.Services.AddSingleton<IPendingOrdersCacheService, PendingOrdersCacheService>();
             builder.Services.AddHostedService<FirefoxService>();
+            builder.Services.AddSingleton<IConsolidatedInventoryService, ConsolidatedInventoryService>();
+            builder.Services.AddSingleton<IPulseApiClient>(services => {
+
+                return new PulseApiClient(services.GetRequiredService<IHttpClientFactory>().CreateClient("PulseApiHttpClient"));
+            });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

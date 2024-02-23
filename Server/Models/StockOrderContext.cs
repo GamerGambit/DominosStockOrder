@@ -18,6 +18,6 @@ namespace DominosStockOrder.Server.Models
         }
 
         public DbSet<InventoryItem> InventoryItems { get; set; }
-        public DbSet<ItemAverages> ItemAverages { get; set; }
+        public DbSet<ItemInitialFoodTheo> InitialFoodTheos { get; set; }
     }
 }

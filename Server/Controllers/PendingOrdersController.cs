@@ -16,12 +16,14 @@ namespace DominosStockOrder.Server.Controllers
         private readonly IPendingOrdersCacheService _pendingOrdersCache;
         private readonly StockOrderContext _context;
         private readonly IHubContext<PurchasingHub, IPurchasingClient> _hub;
+        private readonly IConsolidatedInventoryService _consolidatedInventory;
 
-        public PendingOrdersController(IPendingOrdersCacheService pendingOrdersCache, StockOrderContext context, IHubContext<PurchasingHub, IPurchasingClient> hub)
+        public PendingOrdersController(IPendingOrdersCacheService pendingOrdersCache, StockOrderContext context, IHubContext<PurchasingHub, IPurchasingClient> hub, IConsolidatedInventoryService consolidatedInventory)
         {
             _pendingOrdersCache = pendingOrdersCache;
             _context = context;
             _hub = hub;
+            _consolidatedInventory = consolidatedInventory;
         }
 
         // GET: api/<PendingOrdersController>
@@ -35,7 +37,7 @@ namespace DominosStockOrder.Server.Controllers
                 Items = o.Items.Select(async i =>
                 {
                     var pulseCode = Regex.Replace(i.Code, @"\D+$", string.Empty);
-                    var averages = _context.ItemAverages.Where(ia => ia.ItemCode == pulseCode).ToList();
+                    var averages = _consolidatedInventory.GetItemFoodTheos(pulseCode);
                     return new StockOrderRequestItemVM
                     {
                         PurchaseOrderItemId = i.PurchaseOrderItemId,
@@ -49,7 +51,7 @@ namespace DominosStockOrder.Server.Controllers
                         IsItemEnabledRecently = i.IsItemEnabledRecently,
                         IsItemCodeChangedRecently = i.IsItemCodeChangedRecently,
                         DatabaseInfo = await GetItemInfo(pulseCode),
-                        RollingAverage = averages.Count != 0 ? averages.Average(ia => ia.FoodTheo) : null,
+                        RollingAverage = averages.Average(),
                         NumAverageWeeks = averages.Count
                     };
                 }).Select(t => t.Result)
