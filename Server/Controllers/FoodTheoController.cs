@@ -1,4 +1,5 @@
 ﻿using DominosStockOrder.Server.Models;
+using DominosStockOrder.Server.Services;
 using DominosStockOrder.Shared;
 using DominosStockOrder.Shared.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +11,22 @@ namespace DominosStockOrder.Server.Controllers;
 public class FoodTheoController : Controller
 {
     private readonly StockOrderContext _context;
+    private readonly IConsolidatedInventoryService _consolidatedInventoryService;
 
-    public FoodTheoController(StockOrderContext context)
+    public FoodTheoController(StockOrderContext context, IConsolidatedInventoryService consolidatedInventoryService)
     {
         _context = context;
+        _consolidatedInventoryService = consolidatedInventoryService;
+    }
+
+    // GET
+    [HttpGet]
+    public IEnumerable<WorkingsVM> Get()
+    {
+        return _context.InventoryItems.Where(i => !i.ManualCount).Select(i => new { i.Code, i.Description }).Select(desc => new WorkingsVM {
+            Description = desc.Description,
+            WeeklyFoodTheo = _consolidatedInventoryService.GetItemFoodTheos(desc.Code).ToList()
+        });
     }
 
     // POST
