@@ -27,7 +27,15 @@ namespace DominosStockOrder.Server.Services
         {
             for (int i = 0; i < Constants.NumFoodTheoWeeks; i++)
             {
-                await FetchConsolidatedInventoryWithWeekOffset(i);
+                try
+                {
+                    await FetchConsolidatedInventoryWithWeekOffset(i);
+                }
+                catch (Exception ex) when (ex is HttpRequestException)
+                {
+                    _logger.LogError(ex, "Exception when running Pulse Consolidated Inventory");
+                    return;
+                }
             }
         }
 
