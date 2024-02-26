@@ -2,6 +2,7 @@
 {
     public class WorkingsVM
     {
+        public string PulseCode { get; set; }
         public string Description { get; set; }
 
         /// <summary>

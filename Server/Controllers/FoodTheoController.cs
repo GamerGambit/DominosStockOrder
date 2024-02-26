@@ -24,6 +24,7 @@ public class FoodTheoController : Controller
     public IEnumerable<WorkingsVM> Get()
     {
         return _context.InventoryItems.Where(i => !i.ManualCount).Select(i => new { i.Code, i.Description }).Select(desc => new WorkingsVM {
+            PulseCode = desc.Code,
             Description = desc.Description,
             WeeklyFoodTheo = _consolidatedInventoryService.GetItemFoodTheos(desc.Code).ToList()
         });
