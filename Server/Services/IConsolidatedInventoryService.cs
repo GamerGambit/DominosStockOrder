@@ -4,5 +4,6 @@
     {
         Task FetchConsolidatedInventoryAsync();
         IList<float> GetItemFoodTheos(string pulseCode);
+        float GetItemEndingInventory(string pulseCode);
     }
 }

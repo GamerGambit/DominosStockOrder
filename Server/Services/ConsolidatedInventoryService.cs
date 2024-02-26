@@ -9,10 +9,16 @@ namespace DominosStockOrder.Server.Services
 {
     public class ConsolidatedInventoryService : IConsolidatedInventoryService
     {
+        private class ItemData
+        {
+            public List<float> WeeklyFoodTheos;
+            public float EndingInventory;
+        }
+
         private readonly IServiceProvider _serviceProvider;
         private readonly IPulseApiClient _pulse;
         private readonly ILogger<ConsolidatedInventoryService> _logger;
-        private readonly Dictionary<string, List<float>> _itemFoodTheos = [];
+        private readonly Dictionary<string, ItemData> _itemDict = [];
 
         private static readonly List<float> zeroList = new(0);
 
@@ -41,25 +47,31 @@ namespace DominosStockOrder.Server.Services
 
         public IList<float> GetItemFoodTheos(string pulseCode)
         {
+            if (!_itemDict.TryGetValue(pulseCode, out var data))
+                return zeroList;
+
             var scope = _serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<StockOrderContext>();
             var initialFoodTheoEntry = context.InitialFoodTheos.Find(pulseCode);
 
-            if (_itemFoodTheos.TryGetValue(pulseCode, out var foodTheos))
+            var missingWeeks = Constants.NumFoodTheoWeeks - data.WeeklyFoodTheos.Count;
+            if (missingWeeks > 0)
             {
-                var missingWeeks = Constants.NumFoodTheoWeeks - foodTheos.Count;
-                if (missingWeeks > 0)
-                {
-                    // If we are missing weeks of theo, add the projected usage by the number of missing weeks
-                    // to the original list.
-                    var initialFoodTheo = initialFoodTheoEntry?.InitialFoodTheo ?? 0;
-                    foodTheos.Add(initialFoodTheo * missingWeeks);
-                }
-
-                return foodTheos;
+                // If we are missing weeks of theo, add the projected usage by the number of missing weeks
+                // to the original list.
+                var initialFoodTheo = initialFoodTheoEntry?.InitialFoodTheo ?? 0;
+                data.WeeklyFoodTheos.Add(initialFoodTheo * missingWeeks);
             }
 
-            return zeroList;
+            return data.WeeklyFoodTheos;
+        }
+
+        public float GetItemEndingInventory(string pulseCode)
+        {
+            if (!_itemDict.TryGetValue(pulseCode, out var data))
+                return 0;
+
+            return data.EndingInventory;
         }
 
         /// <summary>
@@ -90,12 +102,19 @@ namespace DominosStockOrder.Server.Services
             var match = Regex.Match(inventory.Description, @"^\(([\d\w]+)\) (.*)$");
             var code = match.Groups[1].Value;
 
-            if (!_itemFoodTheos.ContainsKey(code))
+            if (!_itemDict.TryGetValue(code, out ItemData? data))
             {
-                _itemFoodTheos.Add(code, new  List<float>());
+                _itemDict.Add(code, new()
+                {
+                    WeeklyFoodTheos = [],
+                    EndingInventory = 0
+                });
+
+                return;
             }
 
-            _itemFoodTheos[code].Add(inventory.IdealUsage);
+            data.EndingInventory = inventory.EndingInventory;
+            data.WeeklyFoodTheos.Add(inventory.IdealUsage);
         }
     }
 }
