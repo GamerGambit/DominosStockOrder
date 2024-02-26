@@ -102,13 +102,13 @@
     private void CalculateFinalOrder()
     {
         Console.WriteLine($"CalculateFinalOrder {Item?.Description} | {Item?.DatabaseInfo?.Multiplier}");
-        if (Item.DatabaseInfo is null || Item.DatabaseInfo.ManualCount || Item.RollingAverage is null || !Inventory.GetCurrentStockForItemCode(Item.PulseCode, out var currentStock))
+        if (Item.DatabaseInfo is null || Item.DatabaseInfo.ManualCount || !Inventory.GetCurrentStockForItemCode(Item.PulseCode, out var currentStock))
             return;
 
         const int originIdeal = 0;
         const int inTransit = 0;
 
-        var soldLastWeekTotal = Item.RollingAverage.Value * Item.DatabaseInfo.Multiplier + originIdeal;
+        var soldLastWeekTotal = Item.RollingAverage * Item.DatabaseInfo.Multiplier + originIdeal;
         var totalInStoreInTransit = currentStock + inTransit;
         var totalNeeded = totalInStoreInTransit - soldLastWeekTotal;
         var unitsRequired = totalNeeded / Item.DatabaseInfo.PackSize; // `unitsRequired` is negative since its the difference between what we have and what we sold
