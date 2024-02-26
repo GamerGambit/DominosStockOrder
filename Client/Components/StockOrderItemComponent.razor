@@ -1,10 +1,7 @@
 ﻿@using DominosStockOrder.Shared.ViewModels
-@using DominosStockOrder.Client.Services
 @using DominosStockOrder.Shared
 @using System.Text.Json
-@inject IInventoryService Inventory
 @inject HttpClient Http
-@implements IDisposable
 
 <div class="row mb-1 striped @ExtraClass">
     <div class="col-1 my-auto">@Item.PulseCode</div>
@@ -24,7 +21,7 @@
         <div class="row mb-3">
             <span class="d-block">Insufficient food theo data. Please enter an initial weekly theo</span>
             <div class="col-2">
-                <input type="text" inputmode="numeric" class="form-control" @bind="@_initialFoodTheo"/>
+                <input type="text" inputmode="numeric" class="form-control" @bind="@_initialFoodTheo" />
             </div>
             <div class="col">
                 <button class="btn btn-primary" @onclick="@OnWeeklyFoodTheoSet">Set</button>
@@ -42,16 +39,6 @@
     private List<string> _problems = [];
     private float _initialFoodTheo;
     private float? initialRollingAvg = null;
-
-    private void DataImportedCallback(object? sender, EventArgs e) => CalculateFinalOrder();
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (firstRender)
-        {
-            Inventory.DataImported += DataImportedCallback;
-        }
-    }
 
     protected override void OnParametersSet()
     {
@@ -99,60 +86,13 @@
         }
     }
 
-    private void CalculateFinalOrder()
-    {
-        Console.WriteLine($"CalculateFinalOrder {Item?.Description} | {Item?.DatabaseInfo?.Multiplier}");
-        if (Item.DatabaseInfo is null || Item.DatabaseInfo.ManualCount || !Inventory.GetCurrentStockForItemCode(Item.PulseCode, out var currentStock))
-            return;
-
-        const int originIdeal = 0;
-        const int inTransit = 0;
-
-        var soldLastWeekTotal = Item.RollingAverage * Item.DatabaseInfo.Multiplier + originIdeal;
-        var totalInStoreInTransit = currentStock + inTransit;
-        var totalNeeded = totalInStoreInTransit - soldLastWeekTotal;
-        var unitsRequired = totalNeeded / Item.DatabaseInfo.PackSize; // `unitsRequired` is negative since its the difference between what we have and what we sold
-
-        var sign = MathF.Sign(unitsRequired);
-        
-        Console.WriteLine(Item.Description);
-        Console.WriteLine($"\tSold Last Week: {Item.RollingAverage}");
-        Console.WriteLine($"\tToday Opening: {currentStock}");
-        Console.WriteLine($"\tSold Last Week Total: {soldLastWeekTotal}");
-        Console.WriteLine($"\tTotal In Store/Transit: {totalInStoreInTransit}");
-        Console.WriteLine($"\tTotal Stock Needed: {totalNeeded}");
-        Console.WriteLine($"\tUnits Required: {unitsRequired}");
-        Console.WriteLine($"\tPack Size: {Item.DatabaseInfo.PackSize}");
-        Console.WriteLine($"\tMultiplier: {Item.DatabaseInfo.Multiplier}");
-
-        // If unitsRequired is positive it means we dont need anything as we have more in store than what we used.
-        if (sign >= 0)
-        {
-            Item.FinalOrder = 0;
-        }
-        else
-        {
-            Item.FinalOrder = (int)Math.Abs(Math.Round(unitsRequired));
-        }
-
-        Console.WriteLine($"\tFinal order: {Item.FinalOrder}\n");
-        StateHasChanged();
-    }
-
-    public void Dispose()
-    {
-        Inventory.DataImported -= DataImportedCallback;
-    }
-
     private async Task OnWeeklyFoodTheoSet()
     {
         initialRollingAvg ??= Item.RollingAverage;
-        
-        Item.RollingAverage = (_initialFoodTheo * (Constants.NumFoodTheoWeeks - Item.NumAverageWeeks) + initialRollingAvg) / Constants.NumFoodTheoWeeks;
+
+        Item.RollingAverage = (_initialFoodTheo * (Constants.NumFoodTheoWeeks - Item.NumAverageWeeks) + initialRollingAvg.Value) / Constants.NumFoodTheoWeeks;
         Item.NumAverageWeeks = Constants.NumFoodTheoWeeks;
 
         await Http.PutAsJsonAsync($"api/FoodTheo/Initial/{Item.PulseCode}", JsonSerializer.Serialize(_initialFoodTheo));
-
-        CalculateFinalOrder();
     }
 }

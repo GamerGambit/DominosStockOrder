@@ -1,97 +1,10 @@
 ﻿@page "/"
-@using System.Net.Http.Headers
-@using System.Text.RegularExpressions
-@using Client.Models.Pulse
 @using DominosStockOrder.Client.Components
-@using Shared.Models.DTOs
-@using CsvHelper
-@using CsvHelper.Configuration
-@using CsvHelper.TypeConversion
-@using DominosStockOrder.Client.Services
-@using DominosStockOrder.Shared.ViewModels
-@inject HttpClient Http
-@inject IInventoryService Inventory;
 
 <PageTitle>Home</PageTitle>
-
-<div class="mb-3">
-    <label for="formFile" class="form-label">Consolidated Inventory Report (Exported as TEXT)</label>
-    <InputFile class="form-control" id="formFile" OnChange="@(async (e) => await ProcessFile(e.File))" />
-</div>
 
 <StockOrderSelectorComponent/>
 
 @code {
-    private void AddItemFromRecord(ConsolidatedInventoryRow record)
-    {
-        var match = Regex.Match(record.ItemNameAndCode, @"^\(([\d\w]+)\) (.*)$");
-        var code = match.Groups[1].Value;
-        var desc = match.Groups[2].Value;
 
-        Inventory.AddItem(new InventoryItemDTO
-        {
-            Code = code,
-            Description = desc,
-            EndingInventory = record.EndingInventory,
-            IdealUsage = record.IdealUsage
-        });
-    }
-
-    private async Task ProcessFile(IBrowserFile file)
-    {
-        using var stream = file.OpenReadStream();
-        using var reader = new StreamReader(stream);
-
-        var config = CsvConfiguration.FromAttributes<ConsolidatedInventoryRow>();
-        config.BadDataFound = null;
-        config.MissingFieldFound = null;
-        
-        Inventory.Reset();
-
-        using var csv = new CsvReader(reader, config);
-        while (await csv.ReadAsync())
-        {
-            try
-            {
-                var record = csv.GetRecord<ConsolidatedInventoryRow>();
-                AddItemFromRecord(record);
-            }
-            catch (TypeConverterException)
-            {
-                // We ignore this exceptions because the text file isnt uniform with just the data we need.
-                // this mostly ensures we only get the rows we care about
-                
-                if (csv.TryGetField<DateTime?>(4, out var startDate) && startDate is not null && Inventory.StartDate is null)
-                {
-                    Inventory.StartDate = startDate.Value;
-                }
-                else if (csv.TryGetField<DateTime?>(1, out var endDate) && endDate is not null && Inventory.EndDate is null)
-                {
-                    Inventory.EndDate = endDate.Value;
-                }
-            }
-        }
-
-        Inventory.OnDataImported();
-
-        if (Inventory.ShouldImportFoodTheo())
-        {
-            await SendFoodTheo();
-        }
-    }
-
-    async Task SendFoodTheo()
-    {
-        var vm = new FoodTheoVM
-        {
-            WeekEnding = Inventory.EndDate.Value,
-            ItemTheos = Inventory.GetItems().Select(dto => new InventoryItemFoodTheoVM
-            {
-                PulseCode = dto.Code,
-                IdealUsage = dto.IdealUsage
-            })
-        };
-
-        await Http.PutAsJsonAsync("/api/FoodTheo", vm);
-    }
 }

@@ -12,10 +12,14 @@ namespace DominosStockOrder.Client
             builder.RootComponents.Add<App>("#app");
             builder.RootComponents.Add<HeadOutlet>("head::after");
 
-            builder.Services.AddSingleton<IInventoryService, InventoryService>();
+            builder.Services.AddSingleton<FoodTheoService>();
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-            await builder.Build().RunAsync();
+            var app = builder.Build();
+
+            await app.Services.GetRequiredService<FoodTheoService>().FetchFoodTheoAsync();
+
+            await app.RunAsync();
         }
     }
 }

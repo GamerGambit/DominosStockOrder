@@ -1,21 +1,16 @@
 ﻿@page "/Workings"
+@using DominosStockOrder.Client.Services
 @using DominosStockOrder.Shared
 @using DominosStockOrder.Shared.ViewModels
-@inject HttpClient Http
+@inject FoodTheoService FoodTheo
 
-@if (bIsLoading)
+@if (FoodTheo.Loading)
 {
     <div class="row">
         <p>Loading...</p>
     </div>
 }
-else if (bErrorOccurred)
-{
-    <div class="row">
-        <p>An error occurred while loading food theo</p>
-    </div>
-}
-else if (!_workings.Any())
+else if (!FoodTheo.Workings.Values.Any())
 {
     <div class="row">
         <p>No data</p>
@@ -36,7 +31,7 @@ else
         <div class="col fw-bold">Combined Average</div>
     </div>
 
-    @foreach (var working in _workings)
+    @foreach (var working in FoodTheo.Workings.Values)
     {
         var combinedAvg = working.WeeklyFoodTheo.DefaultIfEmpty(0).Average();
 
@@ -61,21 +56,5 @@ else
 }
 
 @code {
-    private IEnumerable<WorkingsVM> _workings = Enumerable.Empty<WorkingsVM>();
-    private bool bIsLoading = true;
-    private bool bErrorOccurred = false;
 
-    protected override async Task OnInitializedAsync()
-    {
-        var result = await Http.GetFromJsonAsync<IEnumerable<WorkingsVM>>("/api/FoodTheo");
-        bIsLoading = false;
-
-        if (result is null)
-        {
-            bErrorOccurred = true;
-            return;
-        }
-
-        _workings = result;
-    }
 }
