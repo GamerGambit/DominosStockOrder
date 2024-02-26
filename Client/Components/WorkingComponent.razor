@@ -1,0 +1,35 @@
+﻿@using DominosStockOrder.Client.Services
+@using DominosStockOrder.Shared
+@using DominosStockOrder.Shared.ViewModels
+@inject IInventoryItemService Inventory
+
+<div class="row">
+    <div class="col-2">@_item.Description</div>
+
+    @for (var i = 0; i < Constants.NumFoodTheoWeeks; ++i)
+    {
+        var content = 0.ToString("0.00");
+
+        if (i < Working.WeeklyFoodTheo.Count)
+        {
+            content = Working.WeeklyFoodTheo[i].ToString("0.00");
+        }
+
+        <div class="col">@content</div>
+    }
+
+    <div class="col">@_combinedAvg.ToString("0.00")</div>
+</div>
+
+@code {
+    [Parameter] public WorkingsVM Working { get; set; }
+
+    private InventoryItemVM _item;
+    private float _combinedAvg = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _combinedAvg = Working.WeeklyFoodTheo.DefaultIfEmpty(0).Average();
+        _item = await Inventory.GetInventoryItemFromPulseCodeAsync(Working.PulseCode);
+    }
+}

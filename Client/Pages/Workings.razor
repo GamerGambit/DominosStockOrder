@@ -1,7 +1,7 @@
 ﻿@page "/Workings"
+@using DominosStockOrder.Client.Components
 @using DominosStockOrder.Client.Services
 @using DominosStockOrder.Shared
-@using DominosStockOrder.Shared.ViewModels
 @inject FoodTheoService FoodTheo
 
 @if (FoodTheo.Loading)
@@ -33,25 +33,7 @@ else
 
     @foreach (var working in FoodTheo.Workings.Values)
     {
-        var combinedAvg = working.WeeklyFoodTheo.DefaultIfEmpty(0).Average();
-
-        <div class="row">
-            <div class="col-2">@working.Description</div>
-
-            @for (var i = 0; i < Constants.NumFoodTheoWeeks; ++i)
-            {
-                var content = string.Empty;
-
-                if (i < working.WeeklyFoodTheo.Count)
-                {
-                    content = working.WeeklyFoodTheo[i].ToString("0.00");
-                }
-
-                <div class="col">@content</div>
-            }
-
-            <div class="col">@combinedAvg.ToString("0.00")</div>
-        </div>
+        <WorkingComponent @key="@working.PulseCode" Working="@working" />
     }
 }
 

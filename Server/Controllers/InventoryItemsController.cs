@@ -22,6 +22,25 @@ namespace DominosStockOrder.Server.Controllers
             _context = context;
         }
 
+        // GET: api/InventoryItems
+        [HttpGet]
+        public IEnumerable<InventoryItem> Get()
+        {
+            return _context.InventoryItems.AsEnumerable();
+        }
+
+        // GET: api/InventoryItems/{pulseCode}
+        [HttpGet("{pulseCode}")]
+        public async Task<ActionResult<InventoryItem?>> Get(string pulseCode)
+        {
+            var entry = await _context.InventoryItems.FindAsync(pulseCode);
+
+            if (entry is null)
+                return NotFound();
+
+            return Ok(entry);
+        }
+
         // POST: api/InventoryItems
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
