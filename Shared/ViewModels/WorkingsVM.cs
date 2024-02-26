@@ -3,7 +3,6 @@
     public class WorkingsVM
     {
         public string PulseCode { get; set; }
-        public string Description { get; set; }
 
         /// <summary>
         /// Last <see cref="Constants.NumFoodTheoWeeks"/> weeks of food theo
