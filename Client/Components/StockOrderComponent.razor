@@ -1,8 +1,8 @@
 ﻿@using DominosStockOrder.Client.Services
 @using DominosStockOrder.Shared.ViewModels
-@inject FoodTheoService FoodTheo
+@inject IFinalOrderCalculatorService FinalOrder
 
-<button class="btn btn-warning w-100 mb-3" @onclick="@CalculateFinalOrderForAllItems">Calculate Final Order</button>
+<button class="btn btn-warning w-100 mb-3" @onclick="@(async e => await CalculateFinalOrderForAllItems())">Calculate Final Order</button>
 
 <div class="accordion" id="orderItems">
     <StockOrderSection UniqueId="suggested" Title="Suggested Products" Items="@_suggestedItems" />
@@ -29,53 +29,13 @@
         _manualItems = selected.Where(x => x.IsManualCount).SelectMany(x => x.Items).ToList();
     }
 
-    private void CalculateFinalOrderForAllItems()
+    private async Task CalculateFinalOrderForAllItems()
     {
         foreach (var item in Order.Items)
         {
-            CalculateFinalOrderForItem(item);
+            await FinalOrder.CalculateFinalOrder(item.PulseCode);
         }
 
         StateHasChanged();
-    }
-
-    private void CalculateFinalOrderForItem(StockOrderRequestItemVM item)
-    {
-        Console.WriteLine($"CalculateFinalOrder {item?.Description} | {item?.DatabaseInfo?.Multiplier}");
-        if (item.DatabaseInfo is null || item.DatabaseInfo.ManualCount || !FoodTheo.Workings.TryGetValue(item.PulseCode, out var working))
-            return;
-
-        const int originIdeal = 0;
-        const int inTransit = 0;
-
-        var currentStock = working.WeeklyFoodTheo.DefaultIfEmpty(0).Average();
-        var soldLastWeekTotal = item.RollingAverage * item.DatabaseInfo.Multiplier + originIdeal;
-        var totalInStoreInTransit = currentStock + inTransit;
-        var totalNeeded = totalInStoreInTransit - soldLastWeekTotal;
-        var unitsRequired = totalNeeded / item.DatabaseInfo.PackSize; // `unitsRequired` is negative since its the difference between what we have and what we sold
-
-        var sign = MathF.Sign(unitsRequired);
-
-        Console.WriteLine(item.Description);
-        Console.WriteLine($"\tSold Last Week: {item.RollingAverage}");
-        Console.WriteLine($"\tToday Opening: {currentStock}");
-        Console.WriteLine($"\tSold Last Week Total: {soldLastWeekTotal}");
-        Console.WriteLine($"\tTotal In Store/Transit: {totalInStoreInTransit}");
-        Console.WriteLine($"\tTotal Stock Needed: {totalNeeded}");
-        Console.WriteLine($"\tUnits Required: {unitsRequired}");
-        Console.WriteLine($"\tPack Size: {item.DatabaseInfo.PackSize}");
-        Console.WriteLine($"\tMultiplier: {item.DatabaseInfo.Multiplier}");
-
-        // If unitsRequired is positive it means we dont need anything as we have more in store than what we used.
-        if (sign >= 0)
-        {
-            item.FinalOrder = 0;
-        }
-        else
-        {
-            item.FinalOrder = (int)Math.Abs(Math.Round(unitsRequired));
-        }
-
-        Console.WriteLine($"\tFinal order: {item.FinalOrder}\n");
     }
 }
