@@ -11,7 +11,7 @@ namespace DominosStockOrder.Server
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -94,7 +94,9 @@ namespace DominosStockOrder.Server
             app.MapHub<PurchasingHub>("/purchasinghub");
             app.MapFallbackToFile("index.html");
 
-            app.Run();
+            await app.Services.GetRequiredService<IConsolidatedInventoryService>().FetchConsolidatedInventoryAsync();
+
+            await app.RunAsync();
         }
     }
 }
