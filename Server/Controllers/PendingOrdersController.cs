@@ -51,7 +51,7 @@ namespace DominosStockOrder.Server.Controllers
                         IsItemEnabledRecently = i.IsItemEnabledRecently,
                         IsItemCodeChangedRecently = i.IsItemCodeChangedRecently,
                         DatabaseInfo = await GetItemInfo(pulseCode),
-                        RollingAverage = averages.Average(),
+                        RollingAverage = averages.DefaultIfEmpty(0).Average(),
                         NumAverageWeeks = averages.Count
                     };
                 }).Select(t => t.Result)
