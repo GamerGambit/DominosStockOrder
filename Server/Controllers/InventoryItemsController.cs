@@ -40,43 +40,5 @@ namespace DominosStockOrder.Server.Controllers
 
             return Ok(entry);
         }
-
-        // POST: api/InventoryItems
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<IEnumerable<int>> PostInventoryItem(IEnumerable<string> itemCodes)
-        {
-            var statusCodes = new List<int>();
-
-            foreach (var code in itemCodes)
-            {
-
-                if (InventoryItemExists(code))
-                {
-                    statusCodes.Add(Conflict().StatusCode);
-                }
-                else
-                {
-                    _context.InventoryItems.Add(new InventoryItem
-                    {
-                        Code = code,
-                        PortalItemId = null,
-                        PackSize = 0,
-                        Multiplier = 1,
-                        ManualCount = false
-                    });
-
-                    await _context.SaveChangesAsync();
-                    statusCodes.Add(Created().StatusCode.Value);
-                }
-            }
-
-            return statusCodes;
-        }
-
-        private bool InventoryItemExists(string id)
-        {
-            return _context.InventoryItems.Any(e => e.Code == id);
-        }
     }
 }
