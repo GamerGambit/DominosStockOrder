@@ -33,7 +33,7 @@
     {
         foreach (var item in Order.Items)
         {
-            await FinalOrder.CalculateFinalOrder(item.PulseCode);
+            item.FinalOrder = await FinalOrder.CalculateFinalOrder(item.PulseCode);
         }
 
         StateHasChanged();
