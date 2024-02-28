@@ -14,5 +14,6 @@ namespace DominosStockOrder.Server.Models
         public float Multiplier { get; set; }
         public bool ManualCount { get; set; }
         public bool DoubleCheck { get; set; }
+        public string? Comment { get; set; }
     }
 }

@@ -157,5 +157,12 @@ code {
         border: 1px solid black;
         border-radius: 0;
     }
+
+    .comment {
+        top: 0;
+        border: none;
+        background-color: initial;
+        color: black;
+    }
 }
 

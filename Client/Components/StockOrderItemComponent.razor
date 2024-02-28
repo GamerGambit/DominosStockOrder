@@ -10,6 +10,11 @@
     <div class="col-1 my-auto pulseCode">@Item.PulseCode</div>
     <div class="col my-auto description">@Item.Description</div>
 
+    @if(_inventoryItem.Comment is not null && !string.IsNullOrWhiteSpace(_inventoryItem.Comment))
+    {
+        <div class="alert alert-info w-auto p-1 mb-auto comment" style="top: .25em;">@_inventoryItem.Comment</div>
+    }
+
     @if (_inventoryItem?.DoubleCheck ?? false)
     {
         <div style="display:contents;"><input type="checkbox" class="form-check-input scale2 doublecheck" @bind="@_inventoryItem.WasDoubleChecked" /></div>

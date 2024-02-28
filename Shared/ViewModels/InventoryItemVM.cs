@@ -9,4 +9,5 @@ public class InventoryItemVM
     public bool ManualCount { get; set; }
     public bool DoubleCheck { get; set; }
     public bool WasDoubleChecked { get; set; } = false;
+    public string? Comment { get; set; }
 }
