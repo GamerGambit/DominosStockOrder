@@ -1,11 +1,12 @@
-﻿using System.Text.RegularExpressions;
-using DominosStockOrder.Server.Hubs;
-using DominosStockOrder.Server.Models;
+﻿using DominosStockOrder.Server.Hubs;
 using DominosStockOrder.Server.Services;
 using DominosStockOrder.Shared.Models.Purchasing;
 using DominosStockOrder.Shared.ViewModels;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+
+using System.Text.RegularExpressions;
 
 namespace DominosStockOrder.Server.Controllers
 {
@@ -14,14 +15,12 @@ namespace DominosStockOrder.Server.Controllers
     public class PendingOrdersController : ControllerBase
     {
         private readonly IPendingOrdersCacheService _pendingOrdersCache;
-        private readonly StockOrderContext _context;
         private readonly IHubContext<PurchasingHub, IPurchasingClient> _hub;
         private readonly IConsolidatedInventoryService _consolidatedInventory;
 
-        public PendingOrdersController(IPendingOrdersCacheService pendingOrdersCache, StockOrderContext context, IHubContext<PurchasingHub, IPurchasingClient> hub, IConsolidatedInventoryService consolidatedInventory)
+        public PendingOrdersController(IPendingOrdersCacheService pendingOrdersCache, IHubContext<PurchasingHub, IPurchasingClient> hub, IConsolidatedInventoryService consolidatedInventory)
         {
             _pendingOrdersCache = pendingOrdersCache;
-            _context = context;
             _hub = hub;
             _consolidatedInventory = consolidatedInventory;
         }
@@ -34,7 +33,7 @@ namespace DominosStockOrder.Server.Controllers
             {
                 PurchaseOrderId = o.PurchaseOrderId,
                 DeliveryDate = o.DeliveryDate,
-                Items = o.Items.Select(async i =>
+                Items = o.Items.Select(i =>
                 {
                     var pulseCode = Regex.Replace(i.Code, @"\D+$", string.Empty);
                     var averages = _consolidatedInventory.GetItemFoodTheos(pulseCode);
@@ -49,29 +48,10 @@ namespace DominosStockOrder.Server.Controllers
                         IsNewInventory = i.IsNewInventory,
                         IsPackSizeUpdated = i.IsPacksizeupdated,
                         IsItemEnabledRecently = i.IsItemEnabledRecently,
-                        IsItemCodeChangedRecently = i.IsItemCodeChangedRecently,
-                        DatabaseInfo = await GetItemInfo(pulseCode),
-                        RollingAverage = averages.DefaultIfEmpty(0).Average(),
-                        NumAverageWeeks = averages.Count
+                        IsItemCodeChangedRecently = i.IsItemCodeChangedRecently
                     };
-                }).Select(t => t.Result)
+                })
             });
-
-            async Task<StockOrderRequestItemDatabaseInfo?> GetItemInfo(string pulseCode)
-            {
-                var dbItem = await _context.InventoryItems.FindAsync(pulseCode);
-
-                if (dbItem is null)
-                    return null;
-
-                return new StockOrderRequestItemDatabaseInfo
-                {
-                    Code = dbItem.Code,
-                    PackSize = dbItem.PackSize,
-                    Multiplier = dbItem.Multiplier,
-                    ManualCount = dbItem.ManualCount
-                };
-            }
         }
 
         [HttpPost]

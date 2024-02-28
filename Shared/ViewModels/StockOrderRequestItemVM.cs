@@ -12,9 +12,4 @@ public class StockOrderRequestItemVM
     public bool IsPackSizeUpdated { get; set; }
     public bool IsItemEnabledRecently { get; set; }
     public bool IsItemCodeChangedRecently { get; set; }
-    public StockOrderRequestItemDatabaseInfo? DatabaseInfo { get; set; }
-    public float RollingAverage { get; set; }
-    
-    // How many weeks do we have average data for?
-    public int NumAverageWeeks { get; set; }
 }

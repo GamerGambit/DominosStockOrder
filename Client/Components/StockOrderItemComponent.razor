@@ -3,6 +3,7 @@
 @using DominosStockOrder.Shared
 @using System.Text.Json
 @inject IInventoryItemService Inventory
+@inject FoodTheoService FoodTheo
 @inject HttpClient Http
 
 <div class="row mb-1 striped @ExtraClass">
@@ -24,7 +25,7 @@
             </div>
         }
     }
-    @if (Item.NumAverageWeeks != Constants.NumFoodTheoWeeks)
+    @if (_numFoodTheoWeeks != Constants.NumFoodTheoWeeks)
     {
         <div class="row mb-3">
             <span class="d-block">Insufficient food theo data. Please enter an initial weekly theo</span>
@@ -43,16 +44,27 @@
     public StockOrderRequestItemVM Item { get; set; }
 
     private bool _bErrorOccurred = false;
-    private string ExtraClass => (!_problems.Any() || Item?.NumAverageWeeks >= Constants.NumFoodTheoWeeks) ? string.Empty : _bErrorOccurred ? "alert-danger" : "alert-warning";
+    private string ExtraClass => (!_problems.Any() || _numFoodTheoWeeks >= Constants.NumFoodTheoWeeks) ? string.Empty : _bErrorOccurred ? "alert-danger" : "alert-warning";
     private List<string> _problems = [];
     private float _initialFoodTheo;
     private float? initialRollingAvg = null;
 
     private InventoryItemVM? _inventoryItem = null;
 
+    private int _numFoodTheoWeeks = 0;
+    private float _rollingAvg = 0;
+
     protected override async Task OnInitializedAsync()
     {
         _inventoryItem = await Inventory.GetInventoryItemFromPulseCodeAsync(Item.PulseCode);
+
+        var workings = FoodTheo.GetWorkingsFromPulseCode(Item.PulseCode);
+
+        if (workings is not null)
+        {
+            _numFoodTheoWeeks = workings.WeeklyFoodTheo.Count;
+            _rollingAvg = workings.WeeklyFoodTheo.DefaultIfEmpty(0).Average();
+        }
     }
 
     protected override void OnParametersSet()
@@ -60,22 +72,22 @@
         _problems.Clear();
         _bErrorOccurred = false;
 
-        if (Item.DatabaseInfo is null)
+        if (_inventoryItem is null)
         {
             _problems.Add("Item does not exist in database");
             _bErrorOccurred = true;
         }
         else
         {
-            if (Item.DatabaseInfo.Code != Item.PulseCode)
+            if (_inventoryItem.Code != Item.PulseCode)
             {
-                _problems.Add($"Pulse codes mismatched {Item.DatabaseInfo.Code} | {Item.PulseCode}");
+                _problems.Add($"Pulse codes mismatched {_inventoryItem.Code} | {Item.PulseCode}");
                 _bErrorOccurred = true;
             }
 
-            if (Item.DatabaseInfo.PackSize != Item.PackSize && !Item.DatabaseInfo.ManualCount)
+            if (_inventoryItem.PackSize != Item.PackSize && !_inventoryItem.ManualCount)
             {
-                _problems.Add($"Pack size mismatched {Item.DatabaseInfo.PackSize} | {Item.PackSize}");
+                _problems.Add($"Pack size mismatched {_inventoryItem.PackSize} | {Item.PackSize}");
                 _bErrorOccurred = true;
             }
         }
@@ -103,10 +115,10 @@
 
     private async Task OnWeeklyFoodTheoSet()
     {
-        initialRollingAvg ??= Item.RollingAverage;
+        initialRollingAvg ??= _rollingAvg;
 
-        Item.RollingAverage = (_initialFoodTheo * (Constants.NumFoodTheoWeeks - Item.NumAverageWeeks) + initialRollingAvg.Value) / Constants.NumFoodTheoWeeks;
-        Item.NumAverageWeeks = Constants.NumFoodTheoWeeks;
+        _rollingAvg = (_initialFoodTheo * (Constants.NumFoodTheoWeeks - _numFoodTheoWeeks) + initialRollingAvg.Value) / Constants.NumFoodTheoWeeks;
+        _numFoodTheoWeeks = Constants.NumFoodTheoWeeks;
 
         await Http.PutAsJsonAsync($"api/FoodTheo/Initial/{Item.PulseCode}", JsonSerializer.Serialize(_initialFoodTheo));
     }

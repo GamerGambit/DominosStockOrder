@@ -45,7 +45,7 @@
 
     protected override void OnParametersSet()
     {
-        var grouped = Order.Items.GroupBy(i => i.DatabaseInfo.ManualCount);
+        var grouped = Order.Items.GroupBy(i => Inventory.GetInventoryItemFromPulseCode(i.PulseCode).ManualCount);
         var selected = grouped.Select(g => new
         {
             IsManualCount = g.Key,
