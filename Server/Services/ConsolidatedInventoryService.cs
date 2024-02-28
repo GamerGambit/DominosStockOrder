@@ -104,13 +104,13 @@ namespace DominosStockOrder.Server.Services
 
             if (!_itemDict.TryGetValue(code, out ItemData? data))
             {
-                _itemDict.Add(code, new()
+                data = new()
                 {
                     WeeklyFoodTheos = [],
                     EndingInventory = 0
-                });
+                };
 
-                return;
+                _itemDict.Add(code, data);
             }
 
             data.EndingInventory = inventory.EndingInventory;
