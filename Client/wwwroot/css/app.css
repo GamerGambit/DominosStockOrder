@@ -113,3 +113,8 @@ code {
     -webkit-transform: scale(2); /* Safari and Chrome */
     -o-transform: scale(2); /* Opera */
 }
+
+.doublecheck
+{
+    margin-top: .7em !important;
+}

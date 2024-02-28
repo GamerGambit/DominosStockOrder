@@ -7,4 +7,6 @@ public class InventoryItemVM
     public float Multiplier { get; set; }
     public float PackSize { get; set; }
     public bool ManualCount { get; set; }
+    public bool DoubleCheck { get; set; }
+    public bool WasDoubleChecked { get; set; } = false;
 }

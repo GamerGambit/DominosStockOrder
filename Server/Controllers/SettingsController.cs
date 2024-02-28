@@ -26,7 +26,8 @@ public class SettingsController : ControllerBase
             Description = i.Description,
             Multiplier = i.Multiplier,
             PackSize = i.PackSize,
-            ManualCount = i.ManualCount
+            ManualCount = i.ManualCount,
+            DoubleCheck = i.DoubleCheck
         });
     }
 
@@ -46,6 +47,7 @@ public class SettingsController : ControllerBase
             entry.PackSize = item.PackSize;
             entry.ManualCount = item.ManualCount;
             entry.Multiplier = item.Multiplier;
+            entry.DoubleCheck = item.DoubleCheck;
         }
 
         await _context.SaveChangesAsync();

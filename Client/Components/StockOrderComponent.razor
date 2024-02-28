@@ -1,25 +1,47 @@
-﻿@using DominosStockOrder.Client.Services
+﻿ @using DominosStockOrder.Client.Services
+@using DominosStockOrder.Shared.Models.Purchasing
 @using DominosStockOrder.Shared.ViewModels
+@using System.ComponentModel.DataAnnotations
 @inject IFinalOrderCalculatorService FinalOrder
+@inject IInventoryItemService Inventory
+@inject HttpClient Http
+@implements IDisposable
 
 <button class="btn btn-warning w-100 mb-3" @onclick="@(async e => await CalculateFinalOrderForAllItems())">Calculate Final Order</button>
 
-<div class="accordion" id="orderItems">
-    <StockOrderSection UniqueId="suggested" Title="Suggested Products" Items="@_suggestedItems" />
-    <StockOrderSection UniqueId="manual" Title="Manual Count Products" Items="@_manualItems" />
-</div>
+<EditForm EditContext="@editContext" OnValidSubmit="@SaveOrderToPortal">
+    <ObjectGraphDataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="accordion" id="orderItems">
+        <StockOrderSection UniqueId="suggested" Title="Suggested Products" Items="@_suggestedItems" />
+        <StockOrderSection UniqueId="manual" Title="Manual Count Products" Items="@_manualItems" />
+    </div>
 
     <div class="mt-3">
-        <button class="btn btn-primary w-100" @onclick="SaveOrderToPortal" disabled="@_saveButtonDisable">Save Order to Portal</button>
+        <button class="btn btn-primary w-100" type="submit" disabled="@_saveButtonDisable">Save Order to Portal</button>
     </div>
+</EditForm>
 
 @code {
     [Parameter]
+    [ValidateComplexType]
     public StockOrderRequestVM Order { get; set; }
 
     private IEnumerable<StockOrderRequestItemVM> _suggestedItems;
     private IEnumerable<StockOrderRequestItemVM> _manualItems;
     private bool _saveButtonDisable = false;
+
+    private EditContext? editContext;
+    private ValidationMessageStore? messageStore;
+
+    protected override void OnInitialized()
+    {
+        editContext = new(Order);
+        editContext.OnValidationRequested += HandleValidationRequested;
+
+        messageStore = new(editContext);
+    }
 
     protected override void OnParametersSet()
     {
@@ -62,5 +84,27 @@
         };
 
         await Http.PostAsJsonAsync("/api/PendingOrders", transformedOrder);
+    }
+
+    private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
+    {
+        messageStore?.Clear();
+
+        foreach (var item in Order.Items)
+        {
+            var inventoryItem = Inventory.GetInventoryItemFromPulseCode(item.PulseCode);
+            if (inventoryItem.DoubleCheck && !inventoryItem.WasDoubleChecked)
+            {
+                messageStore?.Add(() => inventoryItem.WasDoubleChecked, $"{item.Description} needs to be double checked");
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        if (editContext is not null)
+        {
+            editContext.OnValidationRequested -= HandleValidationRequested;
+        }
     }
 }
