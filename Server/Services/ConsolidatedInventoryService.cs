@@ -11,14 +11,16 @@ namespace DominosStockOrder.Server.Services
     {
         private class ItemData
         {
-            public List<float> WeeklyFoodTheos;
-            public float EndingInventory;
+            public List<float> WeeklyFoodTheos = [];
+            public float EndingInventory = 0;
         }
 
         private readonly IServiceProvider _serviceProvider;
         private readonly IPulseApiClient _pulse;
         private readonly ILogger<ConsolidatedInventoryService> _logger;
         private readonly Dictionary<string, ItemData> _itemDict = [];
+
+        private bool _bOverrideEndingInventory = false;
 
         private static readonly List<float> zeroList = new(0);
 
@@ -31,6 +33,8 @@ namespace DominosStockOrder.Server.Services
 
         public async Task FetchConsolidatedInventoryAsync()
         {
+            _bOverrideEndingInventory = true;
+
             for (int i = 0; i < Constants.NumFoodTheoWeeks; i++)
             {
                 try
@@ -41,6 +45,11 @@ namespace DominosStockOrder.Server.Services
                 {
                     _logger.LogError(ex, "Exception when running Pulse Consolidated Inventory");
                     return;
+                }
+                finally
+                {
+                    // Since we iterate from latest to the earliest week, let the latest week set the ending inventory and ignore it for the rest.
+                    _bOverrideEndingInventory = false;
                 }
             }
         }
@@ -104,16 +113,16 @@ namespace DominosStockOrder.Server.Services
 
             if (!_itemDict.TryGetValue(code, out ItemData? data))
             {
-                data = new()
-                {
-                    WeeklyFoodTheos = [],
-                    EndingInventory = 0
-                };
-
+                data = new();
                 _itemDict.Add(code, data);
             }
 
-            data.EndingInventory = inventory.EndingInventory;
+            // Only set the ending inventory for the latest week
+            if (_bOverrideEndingInventory)
+            {
+                data.EndingInventory = inventory.EndingInventory;
+            }
+
             data.WeeklyFoodTheos.Add(inventory.IdealUsage);
         }
     }
