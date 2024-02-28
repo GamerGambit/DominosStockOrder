@@ -60,7 +60,17 @@
     {
         foreach (var item in Order.Items)
         {
-            item.FinalOrder = await FinalOrder.CalculateFinalOrder(item.PulseCode);
+            var inventoryItem = Inventory.GetInventoryItemFromPulseCode(item.PulseCode);
+
+            // Require manual order items to be manually reviewed.
+            if (inventoryItem.ManualCount)
+            {
+                item.FinalOrder = null;
+            }
+            else
+            {
+                item.FinalOrder = await FinalOrder.CalculateFinalOrder(item.PulseCode);
+            }
         }
 
         StateHasChanged();
@@ -96,6 +106,11 @@
             if (inventoryItem.DoubleCheck && !inventoryItem.WasDoubleChecked)
             {
                 messageStore?.Add(() => inventoryItem.WasDoubleChecked, $"{item.Description} needs to be double checked");
+            }
+
+            if (!item.FinalOrder.HasValue)
+            {
+                messageStore?.Add(() => item.FinalOrder, $"{item.Description} needs a final order value");
             }
         }
     }
