@@ -42,6 +42,16 @@ namespace DominosStockOrder.Client.Services
             return item;
         }
 
+        public InventoryItemVM? GetInventoryItemFromPulseCode(string pulseCode)
+        {
+            if (itemDict.TryGetValue(pulseCode, out var item))
+            {
+                return item;
+            }
+
+            return null;
+        }
+
         private async Task<InventoryItemVM?> FetchInventoryItemFromPulseCode(string pulseCode)
         {
 
