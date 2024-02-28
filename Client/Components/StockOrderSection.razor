@@ -1,12 +1,12 @@
 ﻿@using DominosStockOrder.Shared.ViewModels
 
-<div class="accordion-item">
+<div class="accordion-item" id="@UniqueId">
     <h2 class="accordion-header" id="@(UniqueId)Heading">
-        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#@UniqueId" aria-expanded="true" aria-controls="suggested">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#@(UniqueId)Items" aria-expanded="true" aria-controls="@UniqueId">
             @Title
         </button>
     </h2>
-    <div id="@UniqueId" class="accordion-collapse collapse @(StartShown ? "show" : string.Empty)" aria-labelledby="@(UniqueId)Heading" data-bs-parent="#orderItems">
+    <div id="@(UniqueId)Items" class="accordion-collapse collapse @(StartShown ? "show" : string.Empty)" aria-labelledby="@(UniqueId)Heading" data-bs-parent="#orderItems">
         <div class="accordion-body">
             <div class="row">
                 <div class="col-1 fw-bold">Code</div>

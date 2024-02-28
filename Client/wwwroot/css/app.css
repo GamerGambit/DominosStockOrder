@@ -118,3 +118,44 @@ code {
 {
     margin-top: .7em !important;
 }
+
+/*
+    this print query is only designed to work on the home page.
+    i tried to get it working with blazor css isolation by using `Home.razor.css` however
+    setting `scope identifier format` to an empty string failed and i couldnt be bothered
+    tagging everything manually AND writing css queries.
+*/
+@media print {
+    @page {
+        size: A4 portrait;
+    }
+
+    #sidebar,
+    #orderSelector,
+    #calculateFinalOrderButton,
+    .accordion-item#suggested,
+    .accordion-item #manualHeading,
+    #manualItems .row:first-child,
+    #manualItems .pulseCode, #manualItems .doublecheck, #manualItems .problemText, #manualItems .initialFoodTheo,
+    #saveOrderToPortalButton,
+    .validation-errors {
+        display: none !important;
+    }
+
+    #manual, #manualItems {
+        display: block !important;
+        border: none;
+    }
+
+    article > .container {
+        width: max-content !important;
+    }
+
+    .finalOrder > input, .finalOrder > input {
+        color: transparent;
+        padding: 0;
+        border: 1px solid black;
+        border-radius: 0;
+    }
+}
+
