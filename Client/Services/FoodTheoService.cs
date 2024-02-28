@@ -9,7 +9,7 @@ namespace DominosStockOrder.Client.Services
     {
         private readonly IServiceProvider _serviceProvider;
         public bool Loading { get; private set; }
-        public Dictionary<string, WorkingsVM> Workings { get; set; } = [];
+        private Dictionary<string, WorkingsVM> Workings { get; set; } = [];
 
         public FoodTheoService(IServiceProvider serviceProvider)
         {
@@ -32,6 +32,22 @@ namespace DominosStockOrder.Client.Services
             foreach (var result in results) {
                 Workings.Add(result.PulseCode, result);
             }
+        }
+
+        public IEnumerable<WorkingsVM> GetAllWorkings()
+        {
+            foreach (var working in Workings.Values)
+            {
+                yield return working;
+            }
+        }
+
+        public WorkingsVM? GetWorkingsFromPulseCode(string pulseCode)
+        {
+            if (Workings.TryGetValue(pulseCode, out var workings))
+                return workings;
+
+            return null;
         }
     }
 }

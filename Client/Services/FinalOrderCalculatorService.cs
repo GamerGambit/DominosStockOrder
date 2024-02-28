@@ -23,7 +23,8 @@
                 return 0;
             }
 
-            if (!_foodTheoService.Workings.TryGetValue(pulseCode, out var working))
+            var working = _foodTheoService.GetWorkingsFromPulseCode(pulseCode);
+            if (working is null)
             {
                 _logger.LogError("Unable to retrieve workings data for {code}", pulseCode);
                 return 0;

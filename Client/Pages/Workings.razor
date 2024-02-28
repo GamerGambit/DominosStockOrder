@@ -2,6 +2,7 @@
 @using DominosStockOrder.Client.Components
 @using DominosStockOrder.Client.Services
 @using DominosStockOrder.Shared
+@using DominosStockOrder.Shared.ViewModels
 @inject FoodTheoService FoodTheo
 
 @if (FoodTheo.Loading)
@@ -10,7 +11,7 @@
         <p>Loading...</p>
     </div>
 }
-else if (!FoodTheo.Workings.Values.Any())
+else if (!_workings.Any())
 {
     <div class="row">
         <p>No data</p>
@@ -33,12 +34,17 @@ else
         <div class="col fw-bold">To Order</div>
     </div>
 
-    @foreach (var working in FoodTheo.Workings.Values)
+    @foreach (var working in _workings)
     {
         <WorkingComponent @key="@working.PulseCode" Working="@working" />
     }
 }
 
 @code {
+    private IEnumerable<WorkingsVM> _workings = Enumerable.Empty<WorkingsVM>();
 
+    protected override void OnInitialized()
+    {
+        _workings = FoodTheo.GetAllWorkings();
+    }
 }
