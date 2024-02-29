@@ -1,10 +1,56 @@
 ﻿@page "/"
 @using DominosStockOrder.Client.Components
+@using DominosStockOrder.Shared.ViewModels
+@inject HttpClient Http
 
 <PageTitle>Home</PageTitle>
 
-<StockOrderSelectorComponent/>
+<div class="container">
+
+@if (bLoading)
+{
+    <div class="alert alert-secondary text-center">Loading...</div>
+}
+else if (!_orders.Any())
+{
+    <p class="alert alert-secondary text-center">No pending orders</p>
+}
+else
+{
+    <div id="orderSelector" class="mb-3">
+        <InputSelect @bind-Value="_selectedOrder" disabled="@(_orders.Count() == 1)" class="form-select">
+            @foreach (var order in _orders)
+            {
+                <option value="@order">@order.DeliveryDate.ToString("D")</option>
+            }
+        </InputSelect>
+    </div>
+
+    @if (_selectedOrder is not null)
+    {
+        <StockOrderComponent Order=_selectedOrder />
+    }
+}
+
+</div>
 
 @code {
+    private IEnumerable<StockOrderRequestVM> _orders = Enumerable.Empty<StockOrderRequestVM>();
+    private StockOrderRequestVM? _selectedOrder = null;
 
+    private bool bLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await FetchPendingOrders();
+    }
+
+    private async Task FetchPendingOrders()
+    {
+        bLoading = true;
+        _orders = await Http.GetFromJsonAsync<IEnumerable<StockOrderRequestVM>>("/api/PendingOrders") ?? Enumerable.Empty<StockOrderRequestVM>();
+        bLoading = false;
+
+        _selectedOrder = _orders?.FirstOrDefault();
+    }
 }
