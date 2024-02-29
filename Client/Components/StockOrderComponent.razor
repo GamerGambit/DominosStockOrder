@@ -10,12 +10,14 @@
 <button id="calculateFinalOrderButton" class="btn btn-warning w-100 mb-3" @onclick="@(async e => await CalculateFinalOrderForAllItems())">Calculate Final Order</button>
 
 <EditForm EditContext="@editContext" OnValidSubmit="@SaveOrderToPortal">
-    <ObjectGraphDataAnnotationsValidator />
-    <ValidationSummary />
-
     <div class="accordion" id="orderItems">
         <StockOrderSection UniqueId="suggested" Title="Suggested Products" Items="@_suggestedItems" />
         <StockOrderSection UniqueId="manual" Title="Manual Count Products" Items="@_manualItems" />
+    </div>
+
+    <div class="alert alert-danger mt-3 validationContainer">
+        <ObjectGraphDataAnnotationsValidator />
+        <ValidationSummary />
     </div>
 
     <div class="my-3">

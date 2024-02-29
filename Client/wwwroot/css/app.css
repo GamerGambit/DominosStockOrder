@@ -166,3 +166,7 @@ code {
     }
 }
 
+/* hide validation alert div when its empty. because of how it gets generated the :empty pseudo selector doesnt work */
+.validationContainer:not(:has(.validation-errors)) {
+    display: none !important;
+}
