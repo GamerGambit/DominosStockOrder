@@ -6,11 +6,11 @@
 <div class="container mb-3">
 @if (_bLoading)
 {
-    <p>Loading items...</p>
+    <div class="alert alert-secondary text-center">Loading...</div>
 }
 else if (_items is null)
 {
-    <p>No items in database</p>
+    <div class="alert alert-secondary text-center">No items in database</div>
 }
 else
 {
