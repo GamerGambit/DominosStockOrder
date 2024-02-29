@@ -12,7 +12,7 @@
 
     @if(_inventoryItem.Comment is not null && !string.IsNullOrWhiteSpace(_inventoryItem.Comment))
     {
-        <div class="alert alert-info w-auto p-1 mb-auto comment" style="top: .25em;">@_inventoryItem.Comment</div>
+        <div class="alert alert-info w-auto p-1 mb-auto comment" style="top: .125em;">@_inventoryItem.Comment</div>
     }
 
     @if (_inventoryItem?.DoubleCheck ?? false)
