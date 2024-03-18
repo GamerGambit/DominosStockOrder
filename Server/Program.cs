@@ -33,7 +33,6 @@ namespace DominosStockOrder.Server
             builder.Services.AddDbContext<StockOrderContext>();
             builder.Services.AddSingleton<IInventoryUpdaterService, InventoryUpdaterService>();
             builder.Services.AddSingleton<IPendingOrdersCacheService, PendingOrdersCacheService>();
-            builder.Services.AddHostedService<FirefoxService>();
             builder.Services.AddHostedService<ConsolidatedInventoryRunnerService>();
             builder.Services.AddSingleton<IConsolidatedInventoryService, ConsolidatedInventoryService>();
             builder.Services.AddSingleton<IPulseApiClient>(services => {
