@@ -2,7 +2,8 @@
 {
     public interface IConsolidatedInventoryService
     {
-        Task FetchConsolidatedInventoryAsync();
+        Task FetchWeeklyFoodTheoAsync();
+        Task FetchEndingInventoryAsync(DateTime date);
         IList<float> GetItemFoodTheos(string pulseCode);
         float GetItemEndingInventory(string pulseCode);
     }

@@ -9,18 +9,17 @@ namespace DominosStockOrder.Server.Services
 {
     public class ConsolidatedInventoryService : IConsolidatedInventoryService
     {
-        private class ItemData
+        private class EndingInventoryData
         {
-            public List<float> WeeklyFoodTheos = [];
-            public float EndingInventory = 0;
+            public DateTime Date { get; set; }
+            public Dictionary<string, float> EndingInventoryDict = [];
         }
 
         private readonly IServiceProvider _serviceProvider;
         private readonly IPulseApiClient _pulse;
         private readonly ILogger<ConsolidatedInventoryService> _logger;
-        private readonly Dictionary<string, ItemData> _itemDict = [];
-
-        private bool _bOverrideEndingInventory = false;
+        private readonly Dictionary<string, List<float>> _weeklyTheoDict = [];
+        private readonly EndingInventoryData _endingInventoryData = new();
 
         private static readonly List<float> zeroList = new(0);
 
@@ -31,10 +30,9 @@ namespace DominosStockOrder.Server.Services
             _serviceProvider = serviceProvider;
         }
 
-        public async Task FetchConsolidatedInventoryAsync()
+        public async Task FetchWeeklyFoodTheoAsync()
         {
-            _bOverrideEndingInventory = true;
-
+            _weeklyTheoDict.Clear();
             for (int i = 0; i < Constants.NumFoodTheoWeeks; i++)
             {
                 try
@@ -46,41 +44,53 @@ namespace DominosStockOrder.Server.Services
                     _logger.LogError(ex, "Exception when running Pulse Consolidated Inventory");
                     return;
                 }
-                finally
-                {
-                    // Since we iterate from latest to the earliest week, let the latest week set the ending inventory and ignore it for the rest.
-                    _bOverrideEndingInventory = false;
-                }
+            }
+        }
+
+        public async Task FetchEndingInventoryAsync(DateTime date)
+        {
+            _endingInventoryData.Date = date;
+            _endingInventoryData.EndingInventoryDict.Clear();
+
+            var itemUsages = await _pulse.ConsolidatedInventoryAsync(date, date);
+
+            foreach (var itemUsage in itemUsages)
+            {
+                var match = Regex.Match(itemUsage.Description, @"^\(([\d\w]+)\) (.*)$");
+                var code = match.Groups[1].Value;
+
+                _endingInventoryData.EndingInventoryDict.Add(code, itemUsage.EndingInventory);
             }
         }
 
         public IList<float> GetItemFoodTheos(string pulseCode)
         {
-            if (!_itemDict.TryGetValue(pulseCode, out var data))
+            if (!_weeklyTheoDict.TryGetValue(pulseCode, out var data))
                 return zeroList;
 
             var scope = _serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<StockOrderContext>();
             var initialFoodTheoEntry = context.InitialFoodTheos.Find(pulseCode);
 
-            var missingWeeks = Constants.NumFoodTheoWeeks - data.WeeklyFoodTheos.Count;
+            var missingWeeks = Constants.NumFoodTheoWeeks - data.Count;
             if (missingWeeks > 0)
             {
                 // If we are missing weeks of theo, add the projected usage by the number of missing weeks
                 // to the original list.
                 var initialFoodTheo = initialFoodTheoEntry?.InitialFoodTheo ?? 0;
-                data.WeeklyFoodTheos.Add(initialFoodTheo * missingWeeks);
+                _logger.LogInformation("Adding projected food theo ({amt}) for {itemCode} (have {cur})", initialFoodTheo, pulseCode, data.Count);
+                data.Add(initialFoodTheo * missingWeeks);
             }
 
-            return data.WeeklyFoodTheos;
+            return data;
         }
 
         public float GetItemEndingInventory(string pulseCode)
         {
-            if (!_itemDict.TryGetValue(pulseCode, out var data))
+            if (!_endingInventoryData.EndingInventoryDict.TryGetValue(pulseCode, out var endingInventory))
                 return 0;
 
-            return data.EndingInventory;
+            return endingInventory;
         }
 
         /// <summary>
@@ -111,19 +121,13 @@ namespace DominosStockOrder.Server.Services
             var match = Regex.Match(inventory.Description, @"^\(([\d\w]+)\) (.*)$");
             var code = match.Groups[1].Value;
 
-            if (!_itemDict.TryGetValue(code, out ItemData? data))
+            if (!_weeklyTheoDict.TryGetValue(code, out var data))
             {
-                data = new();
-                _itemDict.Add(code, data);
+                data = [];
+                _weeklyTheoDict.Add(code, data);
             }
 
-            // Only set the ending inventory for the latest week
-            if (_bOverrideEndingInventory)
-            {
-                data.EndingInventory = inventory.EndingInventory;
-            }
-
-            data.WeeklyFoodTheos.Add(inventory.IdealUsage);
+            data.Add(inventory.IdealUsage);
         }
     }
 }

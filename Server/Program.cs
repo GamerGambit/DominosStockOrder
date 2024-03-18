@@ -94,7 +94,9 @@ namespace DominosStockOrder.Server
             app.MapHub<PurchasingHub>("/purchasinghub");
             app.MapFallbackToFile("index.html");
 
-            await app.Services.GetRequiredService<IConsolidatedInventoryService>().FetchConsolidatedInventoryAsync();
+            await app.Services.GetRequiredService<IConsolidatedInventoryService>().FetchWeeklyFoodTheoAsync();
+            // Since this container restarts every morning at 6am (cronjob), get the ending inventory from yesterday.
+            await app.Services.GetRequiredService<IConsolidatedInventoryService>().FetchEndingInventoryAsync(DateTime.Now.AddDays(-1));
 
             await app.RunAsync();
         }
