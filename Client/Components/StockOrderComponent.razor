@@ -67,7 +67,7 @@
             // Require manual order items to be manually reviewed.
             if (inventoryItem.ManualCount)
             {
-                item.FinalOrder = null;
+                item.FinalOrder = 0;
             }
             else
             {
@@ -108,11 +108,6 @@
             if (inventoryItem.DoubleCheck && !inventoryItem.WasDoubleChecked)
             {
                 messageStore?.Add(() => inventoryItem.WasDoubleChecked, $"{item.Description} needs to be double checked");
-            }
-
-            if (!item.FinalOrder.HasValue)
-            {
-                messageStore?.Add(() => item.FinalOrder, $"{item.Description} needs a final order value");
             }
         }
     }
