@@ -3,6 +3,7 @@
 @using DominosStockOrder.Shared.ViewModels
 @inject IInventoryItemService Inventory
 @inject IFinalOrderCalculatorService FinalOrder
+@inject IExtraInventoryService ExtraInventory
 
 <div class="row">
     <div class="col-2">@_item.Description</div>
@@ -21,6 +22,7 @@
 
     <div class="col">@_combinedAvg.ToString("0.00")</div>
     <div class="col">@Working.EndingInventory.ToString("0.00")</div>
+    <div class="col">@ExtraInventory.GetExtraInventoryForPulseCode(Working.PulseCode).ToString("0.00")</div>
     <div class="col">@_finalOrder</div>
 </div>
 

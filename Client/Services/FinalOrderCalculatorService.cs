@@ -5,12 +5,14 @@
         private readonly IInventoryItemService _inventoryItemService;
         private readonly FoodTheoService _foodTheoService;
         private readonly ILogger<FinalOrderCalculatorService> _logger;
+        private readonly IExtraInventoryService _extraInventoryService;
 
-        public FinalOrderCalculatorService(IInventoryItemService inventoryItemService, FoodTheoService foodTheoService, ILogger<FinalOrderCalculatorService> logger)
+        public FinalOrderCalculatorService(IInventoryItemService inventoryItemService, FoodTheoService foodTheoService, ILogger<FinalOrderCalculatorService> logger, IExtraInventoryService extraInventoryService)
         {
             _inventoryItemService = inventoryItemService;
             _foodTheoService = foodTheoService;
             _logger = logger;
+            _extraInventoryService = extraInventoryService;
         }
 
         public async Task<int> CalculateFinalOrder(string pulseCode)
@@ -32,12 +34,12 @@
 
             Console.WriteLine($"CalculateFinalOrder {item?.Description}");
 
-            const int originIdeal = 0;
+            float extraIdeal = _extraInventoryService.GetExtraInventoryForPulseCode(pulseCode);
             const int inTransit = 0;
 
             var currentStock = working.EndingInventory;
             var rollingAvg = working.WeeklyFoodTheo.DefaultIfEmpty(0).Average();
-            var soldLastWeekTotal = rollingAvg * item.Multiplier + originIdeal;
+            var soldLastWeekTotal = rollingAvg * item.Multiplier + extraIdeal;
             var totalInStoreInTransit = currentStock + inTransit;
             var totalNeeded = totalInStoreInTransit - soldLastWeekTotal;
             var unitsRequired = totalNeeded / item.PackSize; // `unitsRequired` is negative since its the difference between what we have and what we sold

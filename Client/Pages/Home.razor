@@ -1,7 +1,9 @@
 ﻿@page "/"
 @using DominosStockOrder.Client.Components
+@using DominosStockOrder.Client.Services
 @using DominosStockOrder.Shared.ViewModels
 @inject HttpClient Http
+@inject IExtraInventoryService ExtraInventory
 
 <PageTitle>Stock Order</PageTitle>
 
@@ -17,13 +19,19 @@ else if (!_orders.Any())
 }
 else
 {
-    <div id="orderSelector" class="mb-3">
-        <InputSelect @bind-Value="_selectedOrder" disabled="@(_orders.Count() == 1)" class="form-select">
-            @foreach (var order in _orders)
-            {
-                <option value="@order">@order.DeliveryDate.ToString("D")</option>
-            }
-        </InputSelect>
+    <div id="orderSelector" class="row mb-3">
+        <div class="col d-flex">
+            <InputSelect @bind-Value="_selectedOrder" disabled="@(_orders.Count() == 1)" class="form-select" style="align-self:flex-end;">
+                @foreach (var order in _orders)
+                {
+                    <option value="@order">@order.DeliveryDate.ToString("D")</option>
+                }
+            </InputSelect>
+        </div>
+        <div class="col">
+            <label for="extraInventory" class="form-label">Additional Ending Inventory</label>
+            <input id="extraInventory" class="form-control" type="date" @bind="_extraInventoryDate" @bind:after="FetchExtraInventory" />
+        </div>
     </div>
 
     @if (_selectedOrder is not null)
@@ -37,6 +45,7 @@ else
 @code {
     private IEnumerable<StockOrderRequestVM> _orders = Enumerable.Empty<StockOrderRequestVM>();
     private StockOrderRequestVM? _selectedOrder = null;
+    private DateTime? _extraInventoryDate = null;
 
     private bool bLoading = true;
 
@@ -52,5 +61,18 @@ else
         bLoading = false;
 
         _selectedOrder = _orders?.FirstOrDefault();
+    }
+
+    private async Task FetchExtraInventory()
+    {
+        if (_extraInventoryDate is null)
+        {
+            ExtraInventory.Clear();
+            return;
+        }
+
+        bLoading = true;
+        await ExtraInventory.FetchExtraInventoryFor(_extraInventoryDate.Value);
+        bLoading = false;
     }
 }

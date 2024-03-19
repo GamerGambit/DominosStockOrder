@@ -1,8 +1,11 @@
 ﻿using DominosStockOrder.Server.Models;
+using DominosStockOrder.Server.PulseApi;
 using DominosStockOrder.Server.Services;
-using DominosStockOrder.Shared;
 using DominosStockOrder.Shared.ViewModels;
+
 using Microsoft.AspNetCore.Mvc;
+
+using System.Text.RegularExpressions;
 
 namespace DominosStockOrder.Server.Controllers;
 
@@ -12,11 +15,13 @@ public class FoodTheoController : Controller
 {
     private readonly StockOrderContext _context;
     private readonly IConsolidatedInventoryService _consolidatedInventoryService;
+    private readonly IPulseApiClient _pulseApiClient;
 
-    public FoodTheoController(StockOrderContext context, IConsolidatedInventoryService consolidatedInventoryService)
+    public FoodTheoController(StockOrderContext context, IConsolidatedInventoryService consolidatedInventoryService, IPulseApiClient pulseApiClient)
     {
         _context = context;
         _consolidatedInventoryService = consolidatedInventoryService;
+        _pulseApiClient = pulseApiClient;
     }
 
     // GET
@@ -47,5 +52,27 @@ public class FoodTheoController : Controller
 
         await _context.SaveChangesAsync();
         return Ok();
+    }
+
+    [HttpGet("extra/{date}")]
+    public async Task<IEnumerable<ExtraInventoryVM>> GetExtra(DateTime date)
+    {
+        var ret = new List<ExtraInventoryVM>();
+
+        var inventories = await _pulseApiClient.ConsolidatedInventoryAsync(date, date);
+
+        foreach (var inv in inventories)
+        {
+            var match = Regex.Match(inv.Description, @"^\(([\d\w]+)\) (.*)$");
+            var code = match.Groups[1].Value;
+
+            ret.Add(new ExtraInventoryVM
+            {
+                PulseCode = code,
+                FoodTheo = inv.EndingInventory
+            });
+        }
+
+        return ret;
     }
 }
