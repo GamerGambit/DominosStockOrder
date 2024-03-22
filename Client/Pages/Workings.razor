@@ -21,30 +21,50 @@ else if (!_workings.Any())
 }
 else
 {
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="weelyTheoSwitch" @bind="_showWeeklyTheo">
+        <label class="form-check-label" for="weelyTheoSwitch">Show Weekly Theo</label>
+    </div>
+
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="extraTheoSwitch" @bind="@_showExtraTheo">
+        <label class="form-check-label" for="extraTheoSwitch">Show Extra Theo</label>
+    </div>
+
     <div class="row">
         <div class="col-2 fw-bold">Description</div>
 
-        @for (var i = 0; i < Constants.NumFoodTheoWeeks; ++i)
+        @if (_showWeeklyTheo)
         {
-            var today = DateTime.Now;
-            var weekEnding = today.AddDays(-(int)today.DayOfWeek).AddDays(-7 * i);
-            <div class="col fw-bold">@weekEnding.ToString("dd/MM")</div>
+            for (var i = 0; i < Constants.NumFoodTheoWeeks; ++i)
+            {
+                var today = DateTime.Now;
+                var weekEnding = today.AddDays(-(int)today.DayOfWeek).AddDays(-7 * i);
+                <div class="col fw-bold">@weekEnding.ToString("dd/MM")</div>
+            }
         }
 
         <div class="col fw-bold">Combined Average</div>
         <div class="col fw-bold">In Store</div>
-        <div class="col fw-bold">Additional Usage</div>
+
+        @if (_showExtraTheo)
+        {
+            <div class="col fw-bold">Additional Usage</div>
+        }
+
         <div class="col fw-bold">To Order</div>
     </div>
 
     @foreach (var working in _workings)
     {
-        <WorkingComponent @key="@working.PulseCode" Working="@working" />
+        <WorkingComponent @key="@working.PulseCode" Working="@working" ShowWeeklyTheo="@_showWeeklyTheo" ShowExtraTheo="@_showExtraTheo" />
     }
 }
 
 @code {
     private IEnumerable<WorkingsVM> _workings = Enumerable.Empty<WorkingsVM>();
+    private bool _showWeeklyTheo = true;
+    private bool _showExtraTheo = false;
 
     protected override void OnInitialized()
     {

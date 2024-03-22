@@ -8,26 +8,36 @@
 <div class="row">
     <div class="col-2">@_item.Description</div>
 
-    @for (var i = 0; i < Constants.NumFoodTheoWeeks; ++i)
+    @if (ShowWeeklyTheo)
     {
-        var content = 0.ToString("0.00");
-
-        if (i < Working.WeeklyFoodTheo.Count)
+        for (var i = 0; i < Constants.NumFoodTheoWeeks; ++i)
         {
-            content = Working.WeeklyFoodTheo[i].ToString("0.00");
-        }
+            var content = 0.ToString("0.00");
 
-        <div class="col">@content</div>
+            if (i < Working.WeeklyFoodTheo.Count)
+            {
+                content = Working.WeeklyFoodTheo[i].ToString("0.00");
+            }
+
+            <div class="col">@content</div>
+        }
     }
 
     <div class="col">@_combinedAvg.ToString("0.00")</div>
     <div class="col">@Working.EndingInventory.ToString("0.00")</div>
-    <div class="col">@ExtraInventory.GetExtraInventoryForPulseCode(Working.PulseCode).ToString("0.00")</div>
+
+    @if (ShowExtraTheo)
+    {
+        <div class="col">@ExtraInventory.GetExtraInventoryForPulseCode(Working.PulseCode).ToString("0.00")</div>
+    }
+
     <div class="col">@_finalOrder</div>
 </div>
 
 @code {
     [Parameter] public WorkingsVM Working { get; set; }
+    [Parameter] public bool ShowWeeklyTheo { get; set; }
+    [Parameter] public bool ShowExtraTheo { get; set; }
 
     private InventoryItemVM _item;
     private float _combinedAvg = 0;
