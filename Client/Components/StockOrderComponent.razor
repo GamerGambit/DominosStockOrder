@@ -67,11 +67,11 @@
             // Require manual order items to be manually reviewed.
             if (inventoryItem.ManualCount)
             {
-                item.FinalOrder = 0;
+                item.Override = 0;
             }
             else
             {
-                item.FinalOrder = await FinalOrder.CalculateFinalOrder(item.PulseCode);
+                item.Override = await FinalOrder.CalculateFinalOrder(item.PulseCode);
             }
         }
 
@@ -91,7 +91,7 @@
             Items = Order.Items.Select(i => new OrderResponseItem
                 {
                 PurchaseOrderItemId = i.PurchaseOrderItemId,
-                Override = i.FinalOrder
+                Override = i.Override
             })
         };
 

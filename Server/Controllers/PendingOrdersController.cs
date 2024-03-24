@@ -43,7 +43,7 @@ namespace DominosStockOrder.Server.Controllers
                         PulseCode = pulseCode,
                         Description = i.Description,
                         AutoIssue = i.AutoIssue,
-                        FinalOrder = i.FinalOrder,
+                        Override = i.Override,
                         PackSize = i.PackSizeQuantity,
                         IsNewInventory = i.IsNewInventory,
                         IsPackSizeUpdated = i.IsPacksizeupdated,
