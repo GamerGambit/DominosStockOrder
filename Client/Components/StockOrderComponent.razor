@@ -71,7 +71,7 @@
             }
             else
             {
-                item.Override = await FinalOrder.CalculateFinalOrder(item.PulseCode);
+                item.Override = await FinalOrder.CalculateFinalOrder(item.PulseCode, item.InTransit);
             }
         }
 

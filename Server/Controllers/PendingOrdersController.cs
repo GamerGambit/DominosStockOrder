@@ -45,6 +45,7 @@ namespace DominosStockOrder.Server.Controllers
                         AutoIssue = i.AutoIssue,
                         Override = i.Override,
                         PackSize = i.PackSizeQuantity,
+                        InTransit = i.InTransit,
                         IsNewInventory = i.IsNewInventory,
                         IsPackSizeUpdated = i.IsPacksizeupdated,
                         IsItemEnabledRecently = i.IsItemEnabledRecently,

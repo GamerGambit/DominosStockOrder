@@ -8,6 +8,7 @@
         public float PackSizeQuantity { get; set; }
         public int AutoIssue { get; set; }
         public int? Override { get; set; }
+        public int InTransit { get; set; }
         public bool IsNewInventory { get; set; }
         public bool IsPacksizeupdated { get; set; }
         public bool IsItemEnabledRecently { get; set; }

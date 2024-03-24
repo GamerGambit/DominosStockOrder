@@ -2,6 +2,6 @@
 {
     public interface IFinalOrderCalculatorService
     {
-        Task<int> CalculateFinalOrder(string pulseCode);
+        Task<int> CalculateFinalOrder(string pulseCode, int inTransit);
     }
 }

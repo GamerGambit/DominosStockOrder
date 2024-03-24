@@ -47,6 +47,6 @@
     {
         _combinedAvg = Working.WeeklyFoodTheo.DefaultIfEmpty(0).Average();
         _item = await Inventory.GetInventoryItemFromPulseCodeAsync(Working.PulseCode);
-        _finalOrder = await FinalOrder.CalculateFinalOrder(_item.Code);
+        _finalOrder = await FinalOrder.CalculateFinalOrder(_item.Code, 0);
     }
 }
