@@ -20,7 +20,7 @@
         <div style="display:contents;"><input type="checkbox" class="form-check-input scale2 doublecheck" @bind="@_inventoryItem.WasDoubleChecked" /></div>
     }
 
-    <div class="col-2 my-auto finalOrder"><input type="text" inputmode="numeric" class="form-control" @bind="@Item.Override" /></div>
+    <div class="col-2 my-auto finalOrder"><input type="text" inputmode="numeric" class="form-control" @bind="@Item.Override" @bind:after="@(async () => await OnOverrideChanged.InvokeAsync())" /></div>
     @if (_problems.Any())
     {
         foreach (var problem in _problems)
@@ -47,6 +47,9 @@
 @code {
     [Parameter]
     public StockOrderRequestItemVM Item { get; set; }
+
+    [Parameter]
+    public EventCallback OnOverrideChanged { get; set; }
 
     private bool _bErrorOccurred = false;
     private string ExtraClass => (!_problems.Any() || _numFoodTheoWeeks >= Constants.NumFoodTheoWeeks) ? string.Empty : _bErrorOccurred ? "alert-danger" : "alert-warning";

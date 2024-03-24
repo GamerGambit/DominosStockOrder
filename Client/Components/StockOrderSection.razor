@@ -15,7 +15,7 @@
             </div>
             @foreach (var item in Items)
             {
-                <StockOrderItemComponent @key="@item.PulseCode" Item=item/>
+                <StockOrderItemComponent @key="@item.PulseCode" Item=item OnOverrideChanged="OnOrderItemOverrideChanged" />
             }
         </div>
     </div>
@@ -24,13 +24,16 @@
 @code {
     [Parameter]
     public IEnumerable<StockOrderRequestItemVM> Items { get; set; }
-    
+
     [Parameter]
     public string UniqueId { get; set; }
-    
+
     [Parameter]
     public string Title { get; set; }
-    
+
     [Parameter]
     public bool StartShown { get; set; } = true;
+
+    [Parameter]
+    public EventCallback OnOrderItemOverrideChanged { get; set; }
 }

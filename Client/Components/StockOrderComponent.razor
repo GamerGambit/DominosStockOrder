@@ -4,6 +4,7 @@
 @using System.ComponentModel.DataAnnotations
 @inject IFinalOrderCalculatorService FinalOrder
 @inject IInventoryItemService Inventory
+@inject IJSRuntime JSRuntime
 @inject HttpClient Http
 @implements IDisposable
 
@@ -11,8 +12,8 @@
 
 <EditForm EditContext="@editContext" OnValidSubmit="@SaveOrderToPortal">
     <div class="accordion" id="orderItems">
-        <StockOrderSection UniqueId="suggested" Title="Suggested Products" Items="@_suggestedItems" />
-        <StockOrderSection UniqueId="manual" Title="Manual Count Products" Items="@_manualItems" />
+        <StockOrderSection UniqueId="suggested" Title="Suggested Products" Items="@_suggestedItems" OnOrderItemOverrideChanged="OnOrderItemOverrideChanged" />
+        <StockOrderSection UniqueId="manual" Title="Manual Count Products" Items="@_manualItems" OnOrderItemOverrideChanged="OnOrderItemOverrideChanged" />
     </div>
 
     <div class="alert alert-danger mt-3 validationContainer">
@@ -25,6 +26,8 @@
     </div>
 </EditForm>
 
+<NavigationLock ConfirmExternalNavigation="@_hasChanges" OnBeforeInternalNavigation="OnBeforeInternalNavigation" />
+
 @code {
     [Parameter]
     [ValidateComplexType]
@@ -36,6 +39,8 @@
 
     private EditContext? editContext;
     private ValidationMessageStore? messageStore;
+
+    private bool _hasChanges = false;
 
     protected override void OnInitialized()
     {
@@ -60,6 +65,8 @@
 
     private async Task CalculateFinalOrderForAllItems()
     {
+        _hasChanges = true;
+
         foreach (var item in Order.Items)
         {
             var inventoryItem = Inventory.GetInventoryItemFromPulseCode(item.PulseCode);
@@ -96,6 +103,7 @@
         };
 
         await Http.PostAsJsonAsync("/api/PendingOrders", transformedOrder);
+        _hasChanges = false;
     }
 
     private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
@@ -107,7 +115,7 @@
             var inventoryItem = Inventory.GetInventoryItemFromPulseCode(item.PulseCode);
             if (inventoryItem.DoubleCheck && !inventoryItem.WasDoubleChecked)
             {
-                messageStore?.Add(() => inventoryItem.WasDoubleChecked, $"{item.Description} needs to be double checked");
+                messageStore?.Add(() => inventoryItem.WasDoubleChecked, $"<a href=\"#{item.PulseCode}\">{item.Description} needs to be double checked</a>");
             }
         }
     }
@@ -118,5 +126,24 @@
         {
             editContext.OnValidationRequested -= HandleValidationRequested;
         }
+    }
+
+    private async Task OnBeforeInternalNavigation(LocationChangingContext context)
+    {
+        if (!_hasChanges)
+            return;
+
+        var isConfirmed = await JSRuntime.InvokeAsync<bool>("confirm",
+            "Stock order has unsaved changes which will be lost.");
+
+        if (!isConfirmed)
+        {
+            context.PreventNavigation();
+        }
+    }
+
+    private void OnOrderItemOverrideChanged()
+    {
+        _hasChanges = true;
     }
 }
