@@ -28,33 +28,20 @@ namespace DominosStockOrder.Server.Services
             var pulseCode = GetPulseCode(code);
             var item = await context.InventoryItems.FindAsync(pulseCode);
 
-            if (item is null)
-            {
-                _logger.LogInformation("Adding missing inventory item: {portalCode} => {pulseCode}", code, pulseCode);
-                await context.InventoryItems.AddAsync(new InventoryItem
-                {
-                    Code = pulseCode,
-                    Description = description,
-                    PortalItemId = purchaseOrderItemId,
-                    PackSize = packSize,
-                    Multiplier = 1
-                });
+            // Item exists in database, do nothing
+            if (item is not null)
+                return;
 
-                await context.SaveChangesAsync();
-            }
-            else
+            _logger.LogInformation("Adding missing inventory item: {portalCode} => {pulseCode}", code, pulseCode);
+            await context.InventoryItems.AddAsync(new InventoryItem
             {
-                if (item.PortalItemId is null)
-                {
-                    _logger.LogInformation("Adding missing portal code to inventory item: {pulseCode} => {portalId}", pulseCode, purchaseOrderItemId);
-                    item.PortalItemId = purchaseOrderItemId;
-                    await context.SaveChangesAsync();
-                }
-                else if (item.PortalItemId != purchaseOrderItemId)
-                {
-                    _logger.LogCritical("Inventory item mismatch: {pulseCode} has {currentCode} but portal has {portalId}", pulseCode, item.PortalItemId, purchaseOrderItemId);
-                }
-            }
+                Code = pulseCode,
+                Description = description,
+                PackSize = packSize,
+                Multiplier = 1
+            });
+
+            await context.SaveChangesAsync();
         }
     }
 }
