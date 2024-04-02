@@ -42,6 +42,7 @@ namespace DominosStockOrder.Server.Controllers
                         PurchaseOrderItemId = i.PurchaseOrderItemId,
                         PulseCode = pulseCode,
                         Description = i.Description,
+                        Suggested = i.Suggested,
                         AutoIssue = i.AutoIssue,
                         Override = i.Override,
                         PackSize = i.PackSizeQuantity,

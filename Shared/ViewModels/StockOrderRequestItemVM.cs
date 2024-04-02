@@ -5,6 +5,7 @@ public class StockOrderRequestItemVM
     public string PurchaseOrderItemId { get; set; }
     public string PulseCode { get; set; }
     public string Description { get; set; }
+    public int Suggested { get; set; }
     public int AutoIssue { get; set; }
     public int? Override { get; set; }
     public float PackSize { get; set; }

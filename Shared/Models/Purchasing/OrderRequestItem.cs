@@ -6,6 +6,7 @@
         public string Code { get; set; }
         public string Description { get; set; }
         public float PackSizeQuantity { get; set; }
+        public int Suggested { get; set; }
         public int AutoIssue { get; set; }
         public int? Override { get; set; }
         public int InTransit { get; set; }

@@ -79,6 +79,7 @@
     {
         _problems.Clear();
         _bErrorOccurred = false;
+        Item.Override ??= Item.Suggested;
 
         if (_inventoryItem is null)
         {
