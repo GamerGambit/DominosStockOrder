@@ -8,11 +8,16 @@
 @inject HttpClient Http
 @implements IDisposable
 
+<div class=="form-check">
+    <input type="checkbox" class="form-check-input" @bind="@_editInTransit" id="editInTransit" />
+    <label for="editInTransit" class="form-check-label">Edit In Transit</label>
+</div>
+
 <button id="calculateFinalOrderButton" class="btn btn-warning w-100 mb-3" @onclick="@(async e => await CalculateFinalOrderForAllItems())">Calculate Final Order</button>
 
 <EditForm EditContext="@editContext" OnValidSubmit="@SaveOrderToPortal">
     <div class="accordion" id="orderItems">
-        <StockOrderSection UniqueId="suggested" Title="Suggested Products" Items="@_suggestedItems" OnOrderItemOverrideChanged="OnOrderItemOverrideChanged" />
+        <StockOrderSection UniqueId="suggested" Title="Suggested Products" Items="@_suggestedItems" OnOrderItemOverrideChanged="OnOrderItemOverrideChanged" EditInTransit="_editInTransit"/>
         <StockOrderSection UniqueId="manual" Title="Manual Count Products" Items="@_manualItems" OnOrderItemOverrideChanged="OnOrderItemOverrideChanged" />
     </div>
 
@@ -41,6 +46,7 @@
     private ValidationMessageStore? messageStore;
 
     private bool _hasChanges = false;
+    private bool _editInTransit = false;
 
     protected override void OnInitialized()
     {

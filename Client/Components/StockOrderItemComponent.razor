@@ -10,6 +10,11 @@
     <div class="col-1 my-auto pulseCode">@Item.PulseCode</div>
     <div class="col my-auto description">@Item.Description</div>
 
+    @if (EditInTransit)
+    {
+        <div class="col-2 my-auto"><input type="text" inputmode="numeric" class="form-control" @bind="@Item.InTransit" /></div>
+    }
+
     @if(_inventoryItem.Comment is not null && !string.IsNullOrWhiteSpace(_inventoryItem.Comment))
     {
         <div class="alert alert-info w-auto p-1 mb-auto comment" style="top: .125em;">@_inventoryItem.Comment</div>
@@ -50,6 +55,9 @@
 
     [Parameter]
     public EventCallback OnOverrideChanged { get; set; }
+
+    [Parameter]
+    public bool EditInTransit { get; set; }
 
     private bool _bErrorOccurred = false;
     private string ExtraClass => (!_problems.Any() || _numFoodTheoWeeks >= Constants.NumFoodTheoWeeks) ? string.Empty : _bErrorOccurred ? "alert-danger" : "alert-warning";
