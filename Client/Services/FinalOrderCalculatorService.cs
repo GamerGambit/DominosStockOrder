@@ -49,6 +49,7 @@
             Console.WriteLine(item.Description);
             Console.WriteLine($"\tSold Last Week: {rollingAvg}");
             Console.WriteLine($"\tToday Opening: {currentStock}");
+            Console.WriteLine($"\tExtra Ideal: {extraIdeal}");
             Console.WriteLine($"\tSold Last Week Total: {soldLastWeekTotal}");
             Console.WriteLine($"\tTotal In Store: {currentStock}");
             Console.WriteLine($"\tTotal In Transit: {inTransitMult}");
