@@ -69,7 +69,7 @@ public class FoodTheoController : Controller
             ret.Add(new ExtraInventoryVM
             {
                 PulseCode = code,
-                FoodTheo = inv.EndingInventory
+                FoodTheo = inv.IdealUsage
             });
         }
 
