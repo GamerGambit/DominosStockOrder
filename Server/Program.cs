@@ -2,7 +2,7 @@ using DominosStockOrder.Server.Hubs;
 using DominosStockOrder.Server.Models;
 using DominosStockOrder.Server.PulseApi;
 using DominosStockOrder.Server.Services;
-
+using DominosStockOrder.Shared;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -39,6 +39,7 @@ namespace DominosStockOrder.Server
 
                 return new PulseApiClient(services.GetRequiredService<IHttpClientFactory>().CreateClient("PulseApiHttpClient"));
             });
+            builder.Services.AddSingleton<Status>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

@@ -1,7 +1,9 @@
-﻿ @using DominosStockOrder.Client.Services
+﻿@using DominosStockOrder.Client.Services
+@using DominosStockOrder.Shared
 @using DominosStockOrder.Shared.Models.Purchasing
 @using DominosStockOrder.Shared.ViewModels
 @using System.ComponentModel.DataAnnotations
+@using System.Timers
 @inject IFinalOrderCalculatorService FinalOrder
 @inject IInventoryItemService Inventory
 @inject IJSRuntime JSRuntime
@@ -16,6 +18,12 @@
 <button id="calculateFinalOrderButton" class="btn btn-warning w-100 mb-3" @onclick="@(async e => await CalculateFinalOrderForAllItems())">Calculate Final Order</button>
 
 <EditForm EditContext="@editContext" OnValidSubmit="@SaveOrderToPortal">
+    @if (!string.IsNullOrWhiteSpace(_statusText))
+    {
+        <div class="alert alert-info">
+            @_statusText
+        </div>
+    }
     <div class="accordion" id="orderItems">
         <StockOrderSection UniqueId="suggested" Title="Suggested Products" Items="@_suggestedItems" OnOrderItemOverrideChanged="OnOrderItemOverrideChanged" EditInTransit="_editInTransit"/>
         <StockOrderSection UniqueId="manual" Title="Manual Count Products" Items="@_manualItems" OnOrderItemOverrideChanged="OnOrderItemOverrideChanged" />
@@ -25,6 +33,13 @@
         <ObjectGraphDataAnnotationsValidator />
         <ValidationSummary />
     </div>
+
+    @if (!string.IsNullOrWhiteSpace(_statusText))
+    {
+        <div class="alert alert-info">
+            @_statusText
+        </div>
+    }
 
     <div class="my-3">
         <button id="saveOrderToPortalButton" class="btn btn-primary w-100" type="submit" disabled="@_saveButtonDisable">Save Order to Portal</button>
@@ -48,12 +63,22 @@
     private bool _hasChanges = false;
     private bool _editInTransit = false;
 
-    protected override void OnInitialized()
+    private System.Timers.Timer statusTimer = new();
+    private string _statusText = string.Empty;
+
+    protected override async Task OnInitializedAsync()
     {
         editContext = new(Order);
         editContext.OnValidationRequested += HandleValidationRequested;
 
         messageStore = new(editContext);
+
+        await CheckStatus();
+        statusTimer = new Timer();
+        statusTimer.AutoReset = true;
+        statusTimer.Interval = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
+        statusTimer.Elapsed += async (s, e) => await CheckStatus();
+        statusTimer.Start();
     }
 
     protected override void OnParametersSet()
@@ -108,8 +133,8 @@
             })
         };
 
+        _statusText = string.Empty;
         await Http.PostAsJsonAsync("/api/PendingOrders", transformedOrder);
-        _hasChanges = false;
     }
 
     private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
@@ -151,5 +176,52 @@
     private void OnOrderItemOverrideChanged()
     {
         _hasChanges = true;
+    }
+
+    private async Task CheckStatus()
+    {
+        Console.WriteLine("Checking Status...");
+        var status = await Http.GetFromJsonAsync<Status>("/api/Status");
+
+        if (status is null)
+        {
+            Console.WriteLine("\tInvalid Status");
+            _statusText = "Invalid status";
+            _saveButtonDisable = true;
+            StateHasChanged();
+            return;
+        }
+
+        if (!status.EODRun)
+        {
+            Console.WriteLine("\tEOD not run");
+            _statusText = "EOD has not been run";
+            _saveButtonDisable = true;
+            StateHasChanged();
+        }
+        else if (!status.IsConnectedToBrowser)
+        {
+            Console.WriteLine("\tNot connected to browser");
+            _statusText = "Unable to communicate with ordering portal";
+            _saveButtonDisable = true;
+            StateHasChanged();
+        }
+        else if (status.IsOrderSuccessful.HasValue)
+        {
+            if (status.IsOrderSuccessful.Value)
+            {
+                Console.WriteLine("\tOrder placed successfully");
+                _statusText = "Order placed successfully";
+                _hasChanges = false;
+            }
+            else
+            {
+                Console.WriteLine("Error saving order: \"" + status.OrderError + "\"");
+                _statusText = status.OrderError;
+            }
+
+            _saveButtonDisable = false;
+            StateHasChanged();
+        }
     }
 }

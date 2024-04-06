@@ -1,4 +1,5 @@
 ﻿using DominosStockOrder.Server.PulseApi;
+using DominosStockOrder.Shared;
 
 namespace DominosStockOrder.Server.Services
 {
@@ -12,13 +13,15 @@ namespace DominosStockOrder.Server.Services
         private readonly IServiceProvider _serviceProvider;
         private readonly IConsolidatedInventoryService _consolidatedInventoryService;
         private readonly ILogger<ConsolidatedInventoryRunnerService> _logger;
+        private readonly Status _statusService;
 
-        public ConsolidatedInventoryRunnerService(IServiceProvider serviceProvider, IConsolidatedInventoryService consolidatedInventoryService, ILogger<ConsolidatedInventoryRunnerService> logger)
+        public ConsolidatedInventoryRunnerService(IServiceProvider serviceProvider, IConsolidatedInventoryService consolidatedInventoryService, ILogger<ConsolidatedInventoryRunnerService> logger, Status statusService)
         {
             _processingDate = DateTime.Now;
             _serviceProvider = serviceProvider;
             _consolidatedInventoryService = consolidatedInventoryService;
             _logger = logger;
+            _statusService = statusService;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -33,6 +36,8 @@ namespace DominosStockOrder.Server.Services
             {
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }
+
+            _statusService.EODRun = true;
 
             _logger.LogInformation("EOD run at {now}, pulling weekly food", DateTime.Now.ToString());
             await _consolidatedInventoryService.FetchWeeklyFoodTheoAsync();
