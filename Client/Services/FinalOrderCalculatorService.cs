@@ -1,4 +1,6 @@
-﻿namespace DominosStockOrder.Client.Services
+﻿using System.ComponentModel.Design;
+
+namespace DominosStockOrder.Client.Services
 {
     public class FinalOrderCalculatorService : IFinalOrderCalculatorService
     {
@@ -44,8 +46,6 @@
             var totalNeeded = totalInStoreInTransit - soldLastWeekTotal;
             var unitsRequired = totalNeeded / item.PackSize; // `unitsRequired` is negative since its the difference between what we have and what we sold
 
-            var sign = MathF.Sign(unitsRequired);
-
             Console.WriteLine(item.Description);
             Console.WriteLine($"\tSold Last Week: {rollingAvg}");
             Console.WriteLine($"\tToday Opening: {currentStock}");
@@ -57,16 +57,25 @@
             Console.WriteLine($"\tUnits Required: {unitsRequired}");
             Console.WriteLine($"\tPack Size: {item.PackSize}");
             Console.WriteLine($"\tMultiplier: {item.Multiplier}");
+            Console.Write($"\tFinal Order: ");
 
-            // If unitsRequired is positive it means we dont need anything as we have more in store than what we used.
-            if (sign >= 0)
+            if (unitsRequired >= 0)
             {
+                Console.WriteLine(0);
                 return 0;
             }
-            else
+
+            var abs = Math.Abs(unitsRequired);
+
+            if (abs > 0 && abs < 1)
             {
-                return (int)Math.Abs(Math.Round(unitsRequired));
+                Console.WriteLine(1);
+                return 1;
             }
+
+            var final = (int)Math.Round(abs);
+            Console.WriteLine(final);
+            return final;
         }
     }
 }
