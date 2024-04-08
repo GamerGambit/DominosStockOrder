@@ -3,6 +3,7 @@
 @using DominosStockOrder.Shared.Models.Purchasing
 @using DominosStockOrder.Shared.ViewModels
 @using System.ComponentModel.DataAnnotations
+@using System.Text
 @using System.Timers
 @inject IFinalOrderCalculatorService FinalOrder
 @inject IInventoryItemService Inventory
@@ -41,12 +42,21 @@
         <ValidationSummary />
     </div>
 
+    <div class="row my-3">
     @if (!string.IsNullOrWhiteSpace(_statusText))
     {
-        <div class="alert alert-info my-3">
-            @_statusText
+        <div class="col">
+            <p class="alert alert-info text-center">@_statusText</p>
         </div>
     }
+
+    @if (_portalWarnings.Length > 0)
+    {
+        <div class="col">
+            <p class="alert alert-warning">@((MarkupString)_portalWarnings.ToString())</p>
+        </div>
+    }
+    </div>
 
     <div class="my-3">
         <button id="saveOrderToPortalButton" class="btn btn-primary w-100" type="submit" disabled="@_saveButtonDisable">Save Order to Portal</button>
@@ -72,6 +82,8 @@
 
     private System.Timers.Timer statusTimer = new();
     private string _statusText = string.Empty;
+
+    private StringBuilder _portalWarnings = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -99,6 +111,55 @@
 
         _suggestedItems = selected.Where(x => !x.IsManualCount).SelectMany(x => x.Items).ToList();
         _manualItems = selected.Where(x => x.IsManualCount).SelectMany(x => x.Items).ToList();
+
+        BuildPortalWarnings();
+    }
+
+    private void BuildPortalWarnings()
+    {
+        if (_suggestedItems is null)
+            return;
+
+        var first = true;
+        var comma = false;
+        var addComma = () => { if (comma) _portalWarnings.Append(", "); };
+
+        foreach (var item in _suggestedItems)
+        {
+            if (!item.IsItemEnabledRecently && !item.IsPackSizeUpdated && !item.IsNewInventory)
+                continue;
+
+            if (!first)
+            {
+                _portalWarnings.AppendLine("<br/>");
+            }
+
+            first = false;
+            comma = false;
+            _portalWarnings.Append($"{item.Description} ");
+
+            if (item.IsItemEnabledRecently)
+            {
+                _portalWarnings.Append("was enabled recently");
+                comma = true;
+            }
+
+            if (item.IsPackSizeUpdated)
+            {
+                addComma();
+                _portalWarnings.Append("has pack size change");
+                comma = true;
+            }
+
+            if (item.IsNewInventory)
+            {
+                addComma();
+                _portalWarnings.Append("is a new item");
+                comma = true;
+            }
+        }
+
+        StateHasChanged();
     }
 
     private async Task CalculateFinalOrderForAllItems()
