@@ -49,5 +49,13 @@ namespace DominosStockOrder.Client.Services
 
             return null;
         }
+
+        public float? GetInitialWeeklyTheoFromPulseCode(string pulseCode)
+        {
+            if (Workings.TryGetValue(pulseCode, out var working))
+                return working.InitialWeeklyTheo;
+
+            return null;
+        }
     }
 }

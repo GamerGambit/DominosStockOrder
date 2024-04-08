@@ -35,7 +35,7 @@
             </div>
         }
     }
-    @if (!_inventoryItem.ManualCount && _numFoodTheoWeeks != Constants.NumFoodTheoWeeks)
+    @if (_needsInitialFoodTheo)
     {
         <div class="row mb-3 initialFoodTheo">
             <span class="d-block">Insufficient food theo data. Please enter an initial weekly theo</span>
@@ -60,17 +60,16 @@
     public bool EditInTransit { get; set; }
 
     private bool _bErrorOccurred = false;
-    private string ExtraClass => (!_problems.Any() || _numFoodTheoWeeks >= Constants.NumFoodTheoWeeks) ? string.Empty : _bErrorOccurred ? "alert-danger" : "alert-warning";
+    private string ExtraClass => (!_problems.Any() || _needsInitialFoodTheo) ? string.Empty : _bErrorOccurred ? "alert-danger" : "alert-warning";
     private List<string> _problems = [];
-    private float _initialFoodTheo;
-    private float? initialRollingAvg = null;
 
     private InventoryItemVM? _inventoryItem = null;
 
-    private int _numFoodTheoWeeks = 0;
-    private float _rollingAvg = 0;
+    // Set this to false initially so we dont get spammed with inputs when the page loads
+    private bool _needsInitialFoodTheo = false;
+    private float _initialFoodTheo = 0;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
         _inventoryItem = await Inventory.GetInventoryItemFromPulseCodeAsync(Item.PulseCode);
 
@@ -78,8 +77,7 @@
 
         if (workings is not null)
         {
-            _numFoodTheoWeeks = workings.WeeklyFoodTheo.Count;
-            _rollingAvg = workings.WeeklyFoodTheo.DefaultIfEmpty(0).Average();
+            _needsInitialFoodTheo = workings.WeeklyFoodTheo.Count < Constants.NumFoodTheoWeeks && !workings.InitialWeeklyTheo.HasValue;
         }
     }
 
@@ -132,10 +130,10 @@
 
     private async Task OnWeeklyFoodTheoSet()
     {
-        initialRollingAvg ??= _rollingAvg;
+        _needsInitialFoodTheo = false;
 
-        _rollingAvg = (_initialFoodTheo * (Constants.NumFoodTheoWeeks - _numFoodTheoWeeks) + initialRollingAvg.Value) / Constants.NumFoodTheoWeeks;
-        _numFoodTheoWeeks = Constants.NumFoodTheoWeeks;
+        var working = FoodTheo.GetWorkingsFromPulseCode(Item.PulseCode);
+        working.InitialWeeklyTheo = _initialFoodTheo;
 
         await Http.PutAsJsonAsync($"api/FoodTheo/Initial/{Item.PulseCode}", JsonSerializer.Serialize(_initialFoodTheo));
     }

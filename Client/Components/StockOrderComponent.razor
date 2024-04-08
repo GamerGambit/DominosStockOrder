@@ -8,6 +8,7 @@
 @inject IFinalOrderCalculatorService FinalOrder
 @inject IInventoryItemService Inventory
 @inject IJSRuntime JSRuntime
+@inject FoodTheoService FoodTheo
 @inject HttpClient Http
 @implements IDisposable
 
@@ -212,9 +213,21 @@
         foreach (var item in Order.Items)
         {
             var inventoryItem = Inventory.GetInventoryItemFromPulseCode(item.PulseCode);
+
+            if (inventoryItem.ManualCount)
+                continue;
+
+            var working = FoodTheo.GetWorkingsFromPulseCode(item.PulseCode);
+
             if (inventoryItem.DoubleCheck && !inventoryItem.WasDoubleChecked)
             {
                 messageStore?.Add(() => inventoryItem.WasDoubleChecked, $"{item.Description} needs to be double checked");
+            }
+
+            var needsInitialWeeklyTheo = working.WeeklyFoodTheo.Count < Constants.NumFoodTheoWeeks;
+            if (needsInitialWeeklyTheo && working.InitialWeeklyTheo is null)
+            {
+                messageStore?.Add(() => working.WeeklyFoodTheo, $"{item.Description} needs initial weekly food theo");
             }
         }
     }

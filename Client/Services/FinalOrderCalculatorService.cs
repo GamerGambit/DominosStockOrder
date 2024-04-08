@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.Design;
+﻿using DominosStockOrder.Shared;
+using System.ComponentModel.Design;
 
 namespace DominosStockOrder.Client.Services
 {
@@ -59,15 +60,28 @@ namespace DominosStockOrder.Client.Services
                 }
             }
 
+            var numInitialTheoWeeks = Constants.NumFoodTheoWeeks - working.WeeklyFoodTheo.Count;
+            var initialWeeklyTheo = (working.InitialWeeklyTheo ?? 0);
+            var defaultWeeklyTheo = initialWeeklyTheo * Constants.NumFoodTheoWeeks;
             var roundedTransfer = Math.Ceiling(transferred / item.PackSize) * item.PackSize;
             var currentStock = working.EndingInventory - roundedTransfer;
-            var rollingAvg = working.WeeklyFoodTheo.DefaultIfEmpty(0).Average();
+
+            var weeklyTheos = working.WeeklyFoodTheo;
+
+            if (numInitialTheoWeeks > 0)
+            {
+                var range = Enumerable.Range(0, numInitialTheoWeeks).Select(x => initialWeeklyTheo);
+                weeklyTheos.AddRange(range);
+            }
+
+            var rollingAvg = weeklyTheos.Average();
             var soldLastWeekTotal = rollingAvg * item.Multiplier + extraIdeal;
             var totalInStoreInTransit = currentStock + inTransitMult;
             var totalNeeded = totalInStoreInTransit - soldLastWeekTotal;
             var unitsRequired = totalNeeded / item.PackSize; // `unitsRequired` is negative since its the difference between what we have and what we sold
 
             Console.WriteLine(item.Description);
+            Console.WriteLine($"\tInitial Food Theo: {initialWeeklyTheo} (used for {numInitialTheoWeeks} weeks)");
             Console.WriteLine($"\tSold Last Week: {rollingAvg}");
             Console.WriteLine($"\tToday Ending: {working.EndingInventory}");
             Console.WriteLine($"\tExtra Ideal: {extraIdeal}");

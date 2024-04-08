@@ -28,10 +28,18 @@ public class FoodTheoController : Controller
     [HttpGet]
     public IEnumerable<WorkingsVM> Get()
     {
-        return _context.InventoryItems.Where(i => !i.ManualCount).Select(i => i.Code).Select(code => new WorkingsVM {
-            PulseCode = code,
-            WeeklyFoodTheo = _consolidatedInventoryService.GetItemFoodTheos(code).ToList(),
-            EndingInventory = _consolidatedInventoryService.GetItemEndingInventory(code)
+        var codes = _context.InventoryItems.Where(i => !i.ManualCount).Select(i => i.Code).ToArray();
+        
+        return codes.Select(code => {
+            var initialTheo = _context.InitialFoodTheos.FirstOrDefault(x => x.PulseCode == code);
+
+            return new WorkingsVM
+            {
+                PulseCode = code,
+                WeeklyFoodTheo = _consolidatedInventoryService.GetItemFoodTheos(code).ToList(),
+                EndingInventory = _consolidatedInventoryService.GetItemEndingInventory(code),
+                InitialWeeklyTheo = initialTheo?.InitialFoodTheo
+            };
         });
     }
 
