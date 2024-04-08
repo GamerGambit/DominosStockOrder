@@ -25,8 +25,15 @@
         </div>
     }
     <div class="accordion" id="orderItems">
-        <StockOrderSection UniqueId="suggested" Title="Suggested Products" Items="@_suggestedItems" OnOrderItemOverrideChanged="OnOrderItemOverrideChanged" EditInTransit="_editInTransit"/>
-        <StockOrderSection UniqueId="manual" Title="Manual Count Products" Items="@_manualItems" OnOrderItemOverrideChanged="OnOrderItemOverrideChanged" />
+        @if (_suggestedItems is not null)
+        {
+            <StockOrderSection UniqueId="suggested" Title="Suggested Products" Items="@_suggestedItems" OnOrderItemOverrideChanged="OnOrderItemOverrideChanged" EditInTransit="_editInTransit"/>
+        }
+
+        @if (_manualItems is not null)
+        {
+            <StockOrderSection UniqueId="manual" Title="Manual Count Products" Items="@_manualItems" OnOrderItemOverrideChanged="OnOrderItemOverrideChanged" />
+        }
     </div>
 
     <div class="alert alert-danger mt-3 validationContainer">
@@ -53,8 +60,8 @@
     [ValidateComplexType]
     public StockOrderRequestVM Order { get; set; }
 
-    private IEnumerable<StockOrderRequestItemVM> _suggestedItems;
-    private IEnumerable<StockOrderRequestItemVM> _manualItems;
+    private IEnumerable<StockOrderRequestItemVM>? _suggestedItems;
+    private IEnumerable<StockOrderRequestItemVM>? _manualItems;
     private bool _saveButtonDisable = false;
 
     private EditContext? editContext;
