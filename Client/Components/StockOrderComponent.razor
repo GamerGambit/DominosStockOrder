@@ -140,7 +140,7 @@
             })
         };
 
-        _statusText = string.Empty;
+        _statusText = "Saving to portal...";
         await Http.PostAsJsonAsync("/api/PendingOrders", transformedOrder);
     }
 
