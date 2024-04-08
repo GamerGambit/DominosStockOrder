@@ -3,6 +3,7 @@
     public class OrderRequest
     {
         public string PurchaseOrderId { get; set; }
+        public DateTime OrderDate { get; set; }
         public DateTime DeliveryDate { get; set; }
         public IEnumerable<OrderRequestItem> Items { get; set; }
     }

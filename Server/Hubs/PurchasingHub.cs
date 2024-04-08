@@ -30,7 +30,7 @@ namespace DominosStockOrder.Server.Hubs
 
             pendingOrdersCache.AddOrder(order);
 
-            _statusService.EODRun = order.DeliveryDate.Date == DateTime.Now.Date;
+            _statusService.EODRun |= order.OrderDate.Date == DateTime.Now.Date;
             _logger.LogInformation("Received order for {date}, setting EODRun to {eod}", order.DeliveryDate.ToString("d"), _statusService.EODRun);
 
             foreach (var item in order.Items)
