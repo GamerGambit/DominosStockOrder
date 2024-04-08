@@ -17,7 +17,16 @@ namespace DominosStockOrder.Server.Services
 
         public ConsolidatedInventoryRunnerService(IServiceProvider serviceProvider, IConsolidatedInventoryService consolidatedInventoryService, ILogger<ConsolidatedInventoryRunnerService> logger, Status statusService)
         {
-            _processingDate = DateTime.Now;
+            var now = DateTime.Now;
+            if (now.Hour < 6)
+            {
+                _processingDate = now.AddDays(-1);
+            }
+            else
+            {
+                _processingDate = now;
+            }
+
             _serviceProvider = serviceProvider;
             _consolidatedInventoryService = consolidatedInventoryService;
             _logger = logger;
@@ -28,7 +37,6 @@ namespace DominosStockOrder.Server.Services
         {
             var scope = _serviceProvider.CreateScope();
             var pulse = scope.ServiceProvider.GetRequiredService<IPulseApiClient>();
-
 
             _logger.LogInformation("Checking EOD for {processingDate}", _processingDate.ToString("d"));
 
