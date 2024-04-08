@@ -4,6 +4,7 @@
 @inject IInventoryItemService Inventory
 @inject IFinalOrderCalculatorService FinalOrder
 @inject IExtraInventoryService ExtraInventory
+@inject ITransferService Transfer
 
 <div class="row">
     <div class="col-2">@_item.Description</div>
@@ -31,6 +32,11 @@
         <div class="col">@ExtraInventory.GetExtraInventoryForPulseCode(Working.PulseCode).ToString("0.00")</div>
     }
 
+    @if (ShowTransferred)
+    {
+        <div class="col">@((Transfer.GetTransferForPulseCode(Working.PulseCode)?.Quantity ?? 0).ToString("0.00"))</div>
+    }
+
     <div class="col">@_finalOrder</div>
 </div>
 
@@ -38,6 +44,7 @@
     [Parameter] public WorkingsVM Working { get; set; }
     [Parameter] public bool ShowWeeklyTheo { get; set; }
     [Parameter] public bool ShowExtraTheo { get; set; }
+    [Parameter] public bool ShowTransferred { get; set; }
 
     private InventoryItemVM _item;
     private float _combinedAvg = 0;

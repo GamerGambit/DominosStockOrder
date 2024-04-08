@@ -1,0 +1,127 @@
+﻿@using DominosStockOrder.Client.Models
+@using DominosStockOrder.Client.Services
+@inject IInventoryItemService Inventory
+@inject ITransferService Transfer
+
+<div class="modal" id="transferModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Stock Transfers</h5>
+                <button class="btn-close" type="button" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="container">
+                    <p class="alert alert-warning text-center">Borrowed stock only</p>
+                </div>
+                <div class="row pb-2 border-bottom justify-content-between">
+                    <div class="col-5">
+                        <label for="transferItem">Item</label>
+                        <InputSelect id="transferItem" class="form-select" @bind-Value="@TransferModel.PulseCode">
+                            @foreach (var data in Inventory.GetTransferrableItemData())
+                            {
+                                <option value="@data.PulseCode">@data.Description</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    <div class="col-3">
+                        <label for="transferQty">Quantity (Pulse Units)</label>
+                        <input id="transferQty" type="text" inputmode="numeric" class="form-control" @bind="TransferModel.Quantity" />
+                    </div>
+
+                    <!-- TRANSFER TYPE (Borrow/Lend)
+                    <div class="col-2">
+                        <label for="transferType">Type</label>
+                        <InputSelect id="transferType" class="form-select" @bind-Value="@TransferModel.TransferType">
+                            @foreach (var type in Enum.GetValues(typeof(TransferType)))
+                            {
+                                <option value="@type">@type</option>
+                            }
+                        </InputSelect>
+                    </div>
+                    -->
+
+                    <div class="col-auto">
+                        <label></label> <!-- empty label to keep the layout nice -->
+                        <button class="btn btn-success d-block" type="button" @onclick="AddItemTransfer">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                @{
+                    var transfers = Transfer.GetAllTransfers();
+                    if (!transfers.Any())
+                    {
+                        <div class="container mt-2">
+                            <p class="alert alert-secondary text-center">No Transfers</p>
+                        </div>
+                    }
+                    else
+                    {
+                        foreach (var itemData in transfers)
+                        {
+                            <div class="row mt-2 justify-content-between">
+                                <div class="col-5 align-self-center">@Inventory.GetDescriptionForPulseCode(itemData.PulseCode)</div>
+                                <div class="col-3 align-self-center">@itemData.Quantity</div>
+                                <!-- TRANSFER TYPE <div class="col-2 align-self-center">@itemData.TransferType</div> -->
+                                <div class="col-auto">
+                                    <button class="btn btn-danger" @onclick="@(() => RemoveItemTransfer(itemData.PulseCode))">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    }
+                }
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code{
+    private ItemTransfer TransferModel = new();
+
+    protected override void OnInitialized()
+    {
+        ResetTransferModel();
+    }
+
+    private void ResetTransferModel()
+    {
+        TransferModel = new()
+        {
+            PulseCode = Inventory.GetTransferrableItemData().First().PulseCode,
+            Quantity = 0,
+            TransferType = TransferType.Borrow
+        };
+    }
+
+    private void AddItemTransfer()
+    {
+        if (TransferModel.Quantity <= 0)
+            return;
+
+        Transfer.AddOrSetTransfer(TransferModel);
+        ResetTransferModel();
+        StateHasChanged();
+    }
+
+    private void RemoveItemTransfer(string pulseCode)
+    {
+        if (string.IsNullOrWhiteSpace(pulseCode))
+            return;
+
+        Transfer.RemoveTransferForPulseCode(pulseCode);
+        StateHasChanged();
+    }
+}

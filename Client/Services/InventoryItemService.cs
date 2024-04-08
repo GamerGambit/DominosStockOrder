@@ -1,4 +1,5 @@
-﻿using DominosStockOrder.Shared.ViewModels;
+﻿using DominosStockOrder.Client.Models;
+using DominosStockOrder.Shared.ViewModels;
 
 using System.Net.Http.Json;
 
@@ -73,6 +74,19 @@ namespace DominosStockOrder.Client.Services
                 return;
 
             itemDict.Add(item.Code, item);
+        }
+
+        public string GetDescriptionForPulseCode(string pulseCode)
+        {
+            if (itemDict.TryGetValue(pulseCode, out var item))
+                return item.Description;
+
+            return string.Empty;
+        }
+
+        public IEnumerable<ItemListData> GetTransferrableItemData()
+        {
+            return itemDict.Where(x => !x.Value.ManualCount).Select(x => new ItemListData { PulseCode = x.Key, Description = x.Value.Description });
         }
     }
 }

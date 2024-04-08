@@ -16,6 +16,7 @@ namespace DominosStockOrder.Client
             builder.Services.AddSingleton<IInventoryItemService, InventoryItemService>();
             builder.Services.AddSingleton<IFinalOrderCalculatorService, FinalOrderCalculatorService>();
             builder.Services.AddSingleton<IExtraInventoryService, ExtraInventoryService>();
+            builder.Services.AddSingleton<ITransferService, TransferService>();
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
             var app = builder.Build();

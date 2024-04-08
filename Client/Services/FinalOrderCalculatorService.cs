@@ -8,13 +8,15 @@ namespace DominosStockOrder.Client.Services
         private readonly FoodTheoService _foodTheoService;
         private readonly ILogger<FinalOrderCalculatorService> _logger;
         private readonly IExtraInventoryService _extraInventoryService;
+        private readonly ITransferService _transferService;
 
-        public FinalOrderCalculatorService(IInventoryItemService inventoryItemService, FoodTheoService foodTheoService, ILogger<FinalOrderCalculatorService> logger, IExtraInventoryService extraInventoryService)
+        public FinalOrderCalculatorService(IInventoryItemService inventoryItemService, FoodTheoService foodTheoService, ILogger<FinalOrderCalculatorService> logger, IExtraInventoryService extraInventoryService, ITransferService transferService)
         {
             _inventoryItemService = inventoryItemService;
             _foodTheoService = foodTheoService;
             _logger = logger;
             _extraInventoryService = extraInventoryService;
+            _transferService = transferService;
         }
 
         public async Task<int> CalculateFinalOrder(string pulseCode, int inTransit)
@@ -39,7 +41,26 @@ namespace DominosStockOrder.Client.Services
             float extraIdeal = _extraInventoryService.GetExtraInventoryForPulseCode(pulseCode);
             float inTransitMult = inTransit * item.PackSize;
 
-            var currentStock = working.EndingInventory;
+            var transfer = _transferService.GetTransferForPulseCode(pulseCode);
+            float transferred = 0;
+
+            if (transfer is not null)
+            {
+                // DO NOT multiply by packsize as this is in pulse units, same as ending inventory
+                transferred = transfer.Quantity;
+
+                // `transferred` is subtracted from `currentStock`.
+                // for items that are borrowed we want these subtracted so we effectively have less in-store so more is ordered.
+                // for items that are lent out we want these added on so we dont order extra as its expected to be returned at some point.
+                // we invert `transferred` when the item is borrowed so we subtract a negative (add)
+                if (transfer.TransferType == Models.TransferType.Lend)
+                {
+                    transferred *= -1;
+                }
+            }
+
+            var roundedTransfer = Math.Ceiling(transferred / item.PackSize) * item.PackSize;
+            var currentStock = working.EndingInventory - roundedTransfer;
             var rollingAvg = working.WeeklyFoodTheo.DefaultIfEmpty(0).Average();
             var soldLastWeekTotal = rollingAvg * item.Multiplier + extraIdeal;
             var totalInStoreInTransit = currentStock + inTransitMult;
@@ -48,9 +69,11 @@ namespace DominosStockOrder.Client.Services
 
             Console.WriteLine(item.Description);
             Console.WriteLine($"\tSold Last Week: {rollingAvg}");
-            Console.WriteLine($"\tToday Opening: {currentStock}");
+            Console.WriteLine($"\tToday Ending: {working.EndingInventory}");
             Console.WriteLine($"\tExtra Ideal: {extraIdeal}");
             Console.WriteLine($"\tSold Last Week Total: {soldLastWeekTotal}");
+            Console.WriteLine($"\tTransfered: {transferred} {transfer?.TransferType}");
+            Console.WriteLine($"\t\tOrdering an extra: {roundedTransfer}");
             Console.WriteLine($"\tTotal In Store: {currentStock}");
             Console.WriteLine($"\tTotal In Transit: {inTransitMult}");
             Console.WriteLine($"\tTotal Stock Needed: {totalNeeded}");

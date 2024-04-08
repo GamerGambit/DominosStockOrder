@@ -1,4 +1,5 @@
-﻿using DominosStockOrder.Shared.ViewModels;
+﻿using DominosStockOrder.Client.Models;
+using DominosStockOrder.Shared.ViewModels;
 
 namespace DominosStockOrder.Client.Services
 {
@@ -8,5 +9,7 @@ namespace DominosStockOrder.Client.Services
 
         InventoryItemVM? GetInventoryItemFromPulseCode(string pulseCode);
         Task<InventoryItemVM?> GetInventoryItemFromPulseCodeAsync(string pulseCode);
+        public string GetDescriptionForPulseCode(string pulseCode);
+        IEnumerable<ItemListData> GetTransferrableItemData();
     }
 }

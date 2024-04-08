@@ -31,6 +31,11 @@ else
         <label class="form-check-label" for="extraTheoSwitch">Show Extra Theo</label>
     </div>
 
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="transferSwitch" @bind="@_showTransfers">
+        <label class="form-check-label" for="transferSwitch">Show Transfers</label>
+    </div>
+
     <div class="row">
         <div class="col-2 fw-bold">Description</div>
 
@@ -52,12 +57,17 @@ else
             <div class="col fw-bold">Additional Usage</div>
         }
 
+        @if (_showTransfers)
+        {
+            <div class="col fw-bold">Transferred</div>
+        }
+
         <div class="col fw-bold">To Order</div>
     </div>
 
     @foreach (var working in _workings)
     {
-        <WorkingComponent @key="@working.PulseCode" Working="@working" ShowWeeklyTheo="@_showWeeklyTheo" ShowExtraTheo="@_showExtraTheo" />
+        <WorkingComponent @key="@working.PulseCode" Working="@working" ShowWeeklyTheo="@_showWeeklyTheo" ShowExtraTheo="@_showExtraTheo" ShowTransferred="@_showTransfers" />
     }
 }
 
@@ -65,6 +75,7 @@ else
     private IEnumerable<WorkingsVM> _workings = Enumerable.Empty<WorkingsVM>();
     private bool _showWeeklyTheo = true;
     private bool _showExtraTheo = false;
+    private bool _showTransfers = false;
 
     protected override void OnInitialized()
     {
