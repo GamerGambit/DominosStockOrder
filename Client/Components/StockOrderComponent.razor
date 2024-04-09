@@ -8,6 +8,8 @@
 @inject IFinalOrderCalculatorService FinalOrder
 @inject IInventoryItemService Inventory
 @inject IJSRuntime JSRuntime
+@inject IExtraInventoryService ExtraInventory
+@inject ITransferService Transfer
 @inject FoodTheoService FoodTheo
 @inject HttpClient Http
 @implements IDisposable
@@ -192,13 +194,17 @@
 
         _saveButtonDisable = true;
 
-        var transformedOrder = new OrderResponse
+        var transformedOrder = new StockOrderResponseVM
         {
             PurchaseOrderId = Order.PurchaseOrderId,
-            Items = Order.Items.Select(i => new OrderResponseItem
-                {
+            Items = Order.Items.Select(i => new StockOrderResponseItemVM
+            {
                 PurchaseOrderItemId = i.PurchaseOrderItemId,
-                Override = i.Override
+                PulseCode = i.PulseCode,
+                Override = i.Override,
+                ExtraIdeal = ExtraInventory.GetExtraInventoryForPulseCode(i.PulseCode),
+                Transferred = Transfer.GetTransferForPulseCode(i.PulseCode)?.Quantity ?? 0,
+                InTransit = i.InTransit
             })
         };
 

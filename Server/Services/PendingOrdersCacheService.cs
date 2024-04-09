@@ -17,5 +17,10 @@ namespace DominosStockOrder.Server.Services
         {
             _orders.Clear();
         }
+
+        public bool HasPendingOrder()
+        {
+            return _orders.Count > 0;
+        }
     }
 }

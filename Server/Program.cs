@@ -6,6 +6,7 @@ using DominosStockOrder.Shared;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using SendGrid.Extensions.DependencyInjection;
 
 namespace DominosStockOrder.Server
 {
@@ -39,6 +40,8 @@ namespace DominosStockOrder.Server
 
                 return new PulseApiClient(services.GetRequiredService<IHttpClientFactory>().CreateClient("PulseApiHttpClient"));
             });
+            builder.Services.AddSendGrid(options => options.ApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY"));
+            builder.Services.AddSingleton<ISavedOrderCacheService, SavedOrderCacheService>();
             builder.Services.AddSingleton<Status>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();

@@ -6,6 +6,7 @@ namespace DominosStockOrder.Server.Services
     {
         IEnumerable<OrderRequest> GetOrders();
         void AddOrder(OrderRequest order);
-        public void ClearOrders();
+        void ClearOrders();
+        bool HasPendingOrder();
     }
 }
