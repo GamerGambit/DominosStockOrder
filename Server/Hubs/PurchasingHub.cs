@@ -115,12 +115,11 @@ namespace DominosStockOrder.Server.Hubs
 
             foreach (var item in _savedOrderCache.GetOrderedItems().OrderBy(i => i.PulseCode))
             {
-                var initialTheo = await _context.InitialFoodTheos.FindAsync(item.PulseCode);
                 var invItem = await _context.InventoryItems.FindAsync(item.PulseCode);
                 var inStore = _consolidatedInventory.GetItemEndingInventory(item.PulseCode);
                 var weeklyTheos = new List<float>(_consolidatedInventory.GetItemFoodTheos(item.PulseCode));
 
-                var initialWeeklyTheo = initialTheo?.InitialFoodTheo ?? 0;
+                var initialWeeklyTheo = invItem.InitialFoodTheo ?? 0;
                 var neededInitialTheos = Constants.NumFoodTheoWeeks - weeklyTheos.Count;
 
                 for(var i = 0; i < neededInitialTheos; ++i)

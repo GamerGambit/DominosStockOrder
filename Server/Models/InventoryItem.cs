@@ -12,5 +12,10 @@ namespace DominosStockOrder.Server.Models
         public bool ManualCount { get; set; }
         public bool DoubleCheck { get; set; }
         public string? Comment { get; set; }
+
+        /// <summary>
+        /// Projected weekly food theo
+        /// </summary>
+        public float? InitialFoodTheo { get; set; }
     }
 }

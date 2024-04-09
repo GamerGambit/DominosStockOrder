@@ -77,7 +77,7 @@
 
         if (workings is not null)
         {
-            _needsInitialFoodTheo = workings.WeeklyFoodTheo.Count < Constants.NumFoodTheoWeeks && !workings.InitialWeeklyTheo.HasValue;
+            _needsInitialFoodTheo = workings.WeeklyFoodTheo.Count < Constants.NumFoodTheoWeeks && !_inventoryItem.InitialFoodTheo.HasValue;
         }
     }
 
@@ -132,8 +132,7 @@
     {
         _needsInitialFoodTheo = false;
 
-        var working = FoodTheo.GetWorkingsFromPulseCode(Item.PulseCode);
-        working.InitialWeeklyTheo = _initialFoodTheo;
+        _inventoryItem.InitialFoodTheo = _initialFoodTheo;
 
         await Http.PutAsJsonAsync($"api/FoodTheo/Initial/{Item.PulseCode}", JsonSerializer.Serialize(_initialFoodTheo));
     }

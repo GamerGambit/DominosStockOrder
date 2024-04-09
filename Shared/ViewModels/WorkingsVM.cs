@@ -9,6 +9,5 @@
         /// </summary>
         public List<float> WeeklyFoodTheo { get; set; }
         public float EndingInventory { get; set; }
-        public float? InitialWeeklyTheo { get; set; }
     }
 }

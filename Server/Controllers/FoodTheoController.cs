@@ -4,7 +4,6 @@ using DominosStockOrder.Server.Services;
 using DominosStockOrder.Shared.ViewModels;
 
 using Microsoft.AspNetCore.Mvc;
-
 using System.Text.RegularExpressions;
 
 namespace DominosStockOrder.Server.Controllers;
@@ -30,16 +29,11 @@ public class FoodTheoController : Controller
     {
         var codes = _context.InventoryItems.Where(i => !i.ManualCount).Select(i => i.Code).ToArray();
         
-        return codes.Select(code => {
-            var initialTheo = _context.InitialFoodTheos.FirstOrDefault(x => x.PulseCode == code);
-
-            return new WorkingsVM
-            {
-                PulseCode = code,
-                WeeklyFoodTheo = _consolidatedInventoryService.GetItemFoodTheos(code).ToList(),
-                EndingInventory = _consolidatedInventoryService.GetItemEndingInventory(code),
-                InitialWeeklyTheo = initialTheo?.InitialFoodTheo
-            };
+        return codes.Select(code => new WorkingsVM
+        {
+            PulseCode = code,
+            WeeklyFoodTheo = _consolidatedInventoryService.GetItemFoodTheos(code).ToList(),
+            EndingInventory = _consolidatedInventoryService.GetItemEndingInventory(code),
         });
     }
 
@@ -47,16 +41,12 @@ public class FoodTheoController : Controller
     [HttpPut("initial/{pulseCode}")]
     public async Task<IActionResult> PutInitial(string pulseCode, [FromBody] float initialWeeklyTheo)
     {
-        var entry = _context.InitialFoodTheos.Where(e => e.PulseCode == pulseCode).FirstOrDefault();
+        var item = await _context.InventoryItems.FindAsync(pulseCode);
 
-        if (entry is not null)
-            return Conflict();
+        if (item is null)
+            return NotFound();
 
-        _context.InitialFoodTheos.Add(new ItemInitialFoodTheo
-        {
-            PulseCode = pulseCode,
-            InitialFoodTheo = initialWeeklyTheo
-        });
+        item.InitialFoodTheo = initialWeeklyTheo;
 
         await _context.SaveChangesAsync();
         return Ok();

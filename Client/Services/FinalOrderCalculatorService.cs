@@ -61,7 +61,7 @@ namespace DominosStockOrder.Client.Services
             }
 
             var numInitialTheoWeeks = Constants.NumFoodTheoWeeks - working.WeeklyFoodTheo.Count;
-            var initialWeeklyTheo = (working.InitialWeeklyTheo ?? 0);
+            var initialWeeklyTheo = (item.InitialFoodTheo ?? 0);
             var defaultWeeklyTheo = initialWeeklyTheo * Constants.NumFoodTheoWeeks;
             var roundedTransfer = Math.Ceiling(transferred / item.PackSize) * item.PackSize;
             var currentStock = working.EndingInventory - roundedTransfer;

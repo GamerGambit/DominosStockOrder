@@ -10,4 +10,5 @@ public class InventoryItemVM
     public bool DoubleCheck { get; set; }
     public bool WasDoubleChecked { get; set; } = false;
     public string? Comment { get; set; }
+    public float? InitialFoodTheo { get; set; }
 }
