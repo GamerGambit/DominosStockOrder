@@ -28,7 +28,8 @@ public class SettingsController : ControllerBase
             PackSize = i.PackSize,
             ManualCount = i.ManualCount,
             DoubleCheck = i.DoubleCheck,
-            Comment = i.Comment
+            Comment = i.Comment,
+            InitialFoodTheo = i.InitialFoodTheo
         });
     }
 
@@ -50,6 +51,7 @@ public class SettingsController : ControllerBase
             entry.Multiplier = item.Multiplier;
             entry.DoubleCheck = item.DoubleCheck;
             entry.Comment = item.Comment;
+            entry.InitialFoodTheo = item.InitialFoodTheo;
         }
 
         await _context.SaveChangesAsync();
