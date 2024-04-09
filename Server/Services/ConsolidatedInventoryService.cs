@@ -68,20 +68,6 @@ namespace DominosStockOrder.Server.Services
             if (!_weeklyTheoDict.TryGetValue(pulseCode, out var data))
                 return zeroList;
 
-            var scope = _serviceProvider.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<StockOrderContext>();
-            var initialFoodTheoEntry = context.InitialFoodTheos.Find(pulseCode);
-
-            var missingWeeks = Constants.NumFoodTheoWeeks - data.Count;
-            if (missingWeeks > 0)
-            {
-                // If we are missing weeks of theo, add the projected usage by the number of missing weeks
-                // to the original list.
-                var initialFoodTheo = initialFoodTheoEntry?.InitialFoodTheo ?? 0;
-                _logger.LogInformation("Adding projected food theo ({amt}) for {itemCode} (have {cur})", initialFoodTheo, pulseCode, data.Count);
-                data.Add(initialFoodTheo * missingWeeks);
-            }
-
             return data;
         }
 
