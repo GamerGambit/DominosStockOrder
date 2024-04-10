@@ -2,7 +2,6 @@
 using DominosStockOrder.Server.Models;
 using DominosStockOrder.Server.PulseApi;
 using DominosStockOrder.Shared;
-
 using System.Text.RegularExpressions;
 
 namespace DominosStockOrder.Server.Services
@@ -21,6 +20,9 @@ namespace DominosStockOrder.Server.Services
         private readonly Dictionary<string, List<float>> _weeklyTheoDict = [];
         private readonly EndingInventoryData _endingInventoryData = new();
 
+        private Dictionary<string, DateTime> _itemIgnoredBefore = [];
+        private DateTime _processingWeekEnding;
+
         private static readonly List<float> zeroList = new(0);
 
         public ConsolidatedInventoryService(IPulseApiClient pulse, ILogger<ConsolidatedInventoryService> logger, IServiceProvider serviceProvider)
@@ -33,6 +35,15 @@ namespace DominosStockOrder.Server.Services
         public async Task FetchWeeklyFoodTheoAsync()
         {
             _weeklyTheoDict.Clear();
+
+            // cache the ignored dates first so we dont have to do a lookup for each item for each week.
+            var scope = _serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StockOrderContext>();
+            _itemIgnoredBefore = context.InventoryItems.Where(i => i.IgnoreFoodTheoBefore.HasValue).Select(i => new { i.Code, i.IgnoreFoodTheoBefore }).ToDictionary(i => i.Code, i => i.IgnoreFoodTheoBefore.Value);
+
+            // Reset before we process any food usage just in case
+            _processingWeekEnding = new();
+
             for (int i = 0; i < Constants.NumFoodTheoWeeks; i++)
             {
                 try
@@ -45,6 +56,9 @@ namespace DominosStockOrder.Server.Services
                     return;
                 }
             }
+
+            // Reset after we process food usage just in case
+            _processingWeekEnding = new();
         }
 
         public async Task FetchEndingInventoryAsync(DateTime date)
@@ -89,6 +103,7 @@ namespace DominosStockOrder.Server.Services
             var today = DateTime.Now;
             var sunday = today.AddDays(-(int)today.DayOfWeek).AddDays(-(weekOffset * 7));
             var monday = sunday.AddDays(-6);
+            _processingWeekEnding = sunday;
 
             var itemUsages = await _pulse.ConsolidatedInventoryAsync(monday, sunday);
             ProcessConsolidatedInventory(itemUsages);
@@ -106,6 +121,10 @@ namespace DominosStockOrder.Server.Services
         {
             var match = Regex.Match(inventory.Description, @"^\(([\d\w]+)\) (.*)$");
             var code = match.Groups[1].Value;
+
+            // If the item has an ignore date and is it before the current processing date, bail
+            if (_itemIgnoredBefore.TryGetValue(code, out var ignoreBefore) && _processingWeekEnding < ignoreBefore)
+                return;
 
             if (!_weeklyTheoDict.TryGetValue(code, out var data))
             {

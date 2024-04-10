@@ -1,4 +1,5 @@
 ﻿using DominosStockOrder.Server.Models;
+using DominosStockOrder.Server.Services;
 using DominosStockOrder.Shared.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,11 +11,13 @@ public class SettingsController : ControllerBase
 {
     private readonly StockOrderContext _context;
     private readonly ILogger<SettingsController> _logger;
+    private readonly IConsolidatedInventoryService _consolidatedInventory;
 
-    public SettingsController(StockOrderContext context, ILogger<SettingsController> logger)
+    public SettingsController(StockOrderContext context, ILogger<SettingsController> logger, IConsolidatedInventoryService consolidatedInventory)
     {
         _context = context;
         _logger = logger;
+        _consolidatedInventory = consolidatedInventory;
     }
 
     [HttpGet]
@@ -29,7 +32,8 @@ public class SettingsController : ControllerBase
             ManualCount = i.ManualCount,
             DoubleCheck = i.DoubleCheck,
             Comment = i.Comment,
-            InitialFoodTheo = i.InitialFoodTheo
+            InitialFoodTheo = i.InitialFoodTheo,
+            IgnoreFoodTheoBefore = i.IgnoreFoodTheoBefore
         });
     }
 
@@ -52,9 +56,13 @@ public class SettingsController : ControllerBase
             entry.DoubleCheck = item.DoubleCheck;
             entry.Comment = item.Comment;
             entry.InitialFoodTheo = item.InitialFoodTheo;
+            entry.IgnoreFoodTheoBefore = item.IgnoreFoodTheoBefore;
         }
 
         await _context.SaveChangesAsync();
+
+        ///@TODO possibly determine if any `IgnoreFoodTheoBefore` has changed and only update then.
+        await _consolidatedInventory.FetchWeeklyFoodTheoAsync();
 
         return Ok();
     }

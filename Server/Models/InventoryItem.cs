@@ -17,5 +17,11 @@ namespace DominosStockOrder.Server.Models
         /// Projected weekly food theo
         /// </summary>
         public float? InitialFoodTheo { get; set; }
+
+        /// <summary>
+        /// When set, ignore all food usage from consolidated inventory before this date.
+        /// This effectively resets the food usage and <paramref name="InitialFoodTheo"></paramref> will be substituted for missing weeks
+        /// </summary>
+        public DateTime? IgnoreFoodTheoBefore { get; set; }
     }
 }
