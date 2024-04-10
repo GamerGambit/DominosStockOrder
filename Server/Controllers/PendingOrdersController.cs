@@ -87,8 +87,12 @@ namespace DominosStockOrder.Server.Controllers
         [HttpGet("Check")]
         public async Task Check()
         {
-            // No pending order, no saved order pending response from browser, or order was successfully saved, do nothing.
-            if (!_pendingOrdersCache.HasPendingOrder() || _savedOrderCache.IsEmpty() || (_status.IsOrderSuccessful.HasValue && _status.IsOrderSuccessful.Value))
+            // No pending order, do nothing
+            if (!_pendingOrdersCache.HasPendingOrder())
+                return;
+
+            // If an order was successfully saved, do nothing
+            if (_status.IsOrderSuccessful.HasValue && _status.IsOrderSuccessful.Value)
                 return;
 
             // We have a saved order waiting a reply or the order has not been saved or was not successful
