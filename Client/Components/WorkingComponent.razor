@@ -1,5 +1,6 @@
 ﻿@using DominosStockOrder.Client.Services
 @using DominosStockOrder.Shared
+@using DominosStockOrder.Shared.DTOs
 @using DominosStockOrder.Shared.ViewModels
 @inject IInventoryItemService Inventory
 @inject IFinalOrderCalculatorService FinalOrder
@@ -17,7 +18,7 @@
 
             if (i < Working.WeeklyFoodTheo.Count)
             {
-                content = Working.WeeklyFoodTheo[i].ToString("0.00");
+                content = Working.WeeklyFoodTheo[i].IdealUsage.ToString("0.00");
             }
 
             <div class="col">@content</div>
@@ -52,7 +53,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _combinedAvg = Working.WeeklyFoodTheo.DefaultIfEmpty(0).Average();
+        _combinedAvg = Working.WeeklyFoodTheo.DefaultIfEmpty(new ItemWeeklyFoodTheo{ IdealUsage = 0 }).Average(x => x.IdealUsage);
         _item = await Inventory.GetInventoryItemFromPulseCodeAsync(Working.PulseCode);
         _finalOrder = await FinalOrder.CalculateFinalOrder(_item.Code, 0);
     }

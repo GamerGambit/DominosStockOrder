@@ -61,9 +61,6 @@ public class SettingsController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        ///@TODO possibly determine if any `IgnoreFoodTheoBefore` has changed and only update then.
-        await _consolidatedInventory.FetchWeeklyFoodTheoAsync();
-
         return Ok();
     }
 }

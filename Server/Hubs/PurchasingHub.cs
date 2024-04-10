@@ -115,7 +115,7 @@ namespace DominosStockOrder.Server.Hubs
             {
                 var invItem = await _context.InventoryItems.FindAsync(item.PulseCode);
                 var inStore = _consolidatedInventory.GetItemEndingInventory(item.PulseCode);
-                var weeklyTheos = new List<float>(_consolidatedInventory.GetItemFoodTheos(item.PulseCode));
+                var weeklyTheos = _consolidatedInventory.GetItemFoodTheos(item.PulseCode).Select(x => x.IdealUsage).ToList();
 
                 var initialWeeklyTheo = invItem.InitialFoodTheo ?? 0;
                 var neededInitialTheos = Constants.NumFoodTheoWeeks - weeklyTheos.Count;

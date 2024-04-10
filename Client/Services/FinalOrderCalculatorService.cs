@@ -66,7 +66,7 @@ namespace DominosStockOrder.Client.Services
             var roundedTransfer = Math.Ceiling(transferred / item.PackSize) * item.PackSize;
             var currentStock = working.EndingInventory - roundedTransfer;
 
-            var weeklyTheos = new List<float>(working.WeeklyFoodTheo);
+            var weeklyTheos = working.WeeklyFoodTheo.Select(x => x.IdealUsage).ToList();
 
             if (numInitialTheoWeeks > 0)
             {

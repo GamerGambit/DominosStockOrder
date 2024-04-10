@@ -27,13 +27,13 @@ public class FoodTheoController : Controller
     [HttpGet]
     public IEnumerable<WorkingsVM> Get()
     {
-        var codes = _context.InventoryItems.Where(i => !i.ManualCount).Select(i => i.Code).ToArray();
+        var itemDatas = _context.InventoryItems.Where(i => !i.ManualCount).Select(i => new { i.Code, i.IgnoreFoodTheoBefore }).ToArray();
         
-        return codes.Select(code => new WorkingsVM
+        return itemDatas.Select(data => new WorkingsVM
         {
-            PulseCode = code,
-            WeeklyFoodTheo = _consolidatedInventoryService.GetItemFoodTheos(code).ToList(),
-            EndingInventory = _consolidatedInventoryService.GetItemEndingInventory(code),
+            PulseCode = data.Code,
+            WeeklyFoodTheo = _consolidatedInventoryService.GetItemFoodTheos(data.Code).Where(x => data.IgnoreFoodTheoBefore == null || x.WeekEnding >= data.IgnoreFoodTheoBefore).ToList(),
+            EndingInventory = _consolidatedInventoryService.GetItemEndingInventory(data.Code),
         });
     }
 

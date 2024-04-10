@@ -1,4 +1,6 @@
-﻿namespace DominosStockOrder.Shared.ViewModels
+﻿using DominosStockOrder.Shared.DTOs;
+
+namespace DominosStockOrder.Shared.ViewModels
 {
     public class WorkingsVM
     {
@@ -7,7 +9,7 @@
         /// <summary>
         /// Last <see cref="Constants.NumFoodTheoWeeks"/> weeks of food theo
         /// </summary>
-        public List<float> WeeklyFoodTheo { get; set; }
+        public List<ItemWeeklyFoodTheo> WeeklyFoodTheo { get; set; }
         public float EndingInventory { get; set; }
     }
 }

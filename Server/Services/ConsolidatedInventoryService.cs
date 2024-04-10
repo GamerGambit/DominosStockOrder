@@ -1,7 +1,6 @@
-﻿
-using DominosStockOrder.Server.Models;
-using DominosStockOrder.Server.PulseApi;
+﻿using DominosStockOrder.Server.PulseApi;
 using DominosStockOrder.Shared;
+using DominosStockOrder.Shared.DTOs;
 using System.Text.RegularExpressions;
 
 namespace DominosStockOrder.Server.Services
@@ -14,32 +13,22 @@ namespace DominosStockOrder.Server.Services
             public Dictionary<string, float> EndingInventoryDict = [];
         }
 
-        private readonly IServiceProvider _serviceProvider;
         private readonly IPulseApiClient _pulse;
         private readonly ILogger<ConsolidatedInventoryService> _logger;
-        private readonly Dictionary<string, List<float>> _weeklyTheoDict = [];
+        private readonly Dictionary<string, List<ItemWeeklyFoodTheo>> _weeklyTheoDict = [];
         private readonly EndingInventoryData _endingInventoryData = new();
 
-        private Dictionary<string, DateTime> _itemIgnoredBefore = [];
         private DateTime _processingWeekEnding;
 
-        private static readonly List<float> zeroList = new(0);
-
-        public ConsolidatedInventoryService(IPulseApiClient pulse, ILogger<ConsolidatedInventoryService> logger, IServiceProvider serviceProvider)
+        public ConsolidatedInventoryService(IPulseApiClient pulse, ILogger<ConsolidatedInventoryService> logger)
         {
             _pulse = pulse;
             _logger = logger;
-            _serviceProvider = serviceProvider;
         }
 
         public async Task FetchWeeklyFoodTheoAsync()
         {
             _weeklyTheoDict.Clear();
-
-            // cache the ignored dates first so we dont have to do a lookup for each item for each week.
-            var scope = _serviceProvider.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<StockOrderContext>();
-            _itemIgnoredBefore = context.InventoryItems.Where(i => i.IgnoreFoodTheoBefore.HasValue).Select(i => new { i.Code, i.IgnoreFoodTheoBefore }).ToDictionary(i => i.Code, i => i.IgnoreFoodTheoBefore.Value);
 
             // Reset before we process any food usage just in case
             _processingWeekEnding = new();
@@ -77,10 +66,10 @@ namespace DominosStockOrder.Server.Services
             }
         }
 
-        public IList<float> GetItemFoodTheos(string pulseCode)
+        public IList<ItemWeeklyFoodTheo> GetItemFoodTheos(string pulseCode)
         {
             if (!_weeklyTheoDict.TryGetValue(pulseCode, out var data))
-                return zeroList;
+                return [];
 
             return data;
         }
@@ -122,17 +111,17 @@ namespace DominosStockOrder.Server.Services
             var match = Regex.Match(inventory.Description, @"^\(([\d\w]+)\) (.*)$");
             var code = match.Groups[1].Value;
 
-            // If the item has an ignore date and is it before the current processing date, bail
-            if (_itemIgnoredBefore.TryGetValue(code, out var ignoreBefore) && _processingWeekEnding < ignoreBefore)
-                return;
-
             if (!_weeklyTheoDict.TryGetValue(code, out var data))
             {
                 data = [];
                 _weeklyTheoDict.Add(code, data);
             }
 
-            data.Add(inventory.IdealUsage);
+            data.Add(new ItemWeeklyFoodTheo
+            {
+                WeekEnding = _processingWeekEnding,
+                IdealUsage = inventory.IdealUsage
+            });
         }
     }
 }
