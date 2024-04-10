@@ -70,8 +70,6 @@ namespace DominosStockOrder.Server.Hubs
         {
             _statusService.IsOrderSuccessful = false;
             _statusService.OrderError = error;
-
-            await SendOrderSuccessEmail();
             _savedOrderCache.Clear();
         }
 
