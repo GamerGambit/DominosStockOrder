@@ -4,26 +4,29 @@ namespace DominosStockOrder.Server.Services
 {
     public class SavedOrderCacheService : ISavedOrderCacheService
     {
-        private List<StockOrderResponseItemVM> _savedItems = [];
+        private StockOrderResponseVM? _savedOrder = null;
 
         public void Clear()
         {
-            _savedItems.Clear();
+            _savedOrder = null;
         }
 
-        public IEnumerable<StockOrderResponseItemVM> GetOrderedItems()
+        public StockOrderResponseVM GetSavedOrder()
         {
-            return _savedItems;
+            if (_savedOrder == null)
+                throw new InvalidOperationException("No saved order");
+
+            return _savedOrder;
         }
 
-        public void SetOrderedItems(IEnumerable<StockOrderResponseItemVM> items)
+        public void SetSavedOrder(StockOrderResponseVM order)
         {
-            _savedItems = items.ToList();
+            _savedOrder = order;
         }
 
-        public bool IsEmpty()
+        public bool HasSavedOrder()
         {
-            return _savedItems.Count == 0;
+            return _savedOrder != null;
         }
     }
 }

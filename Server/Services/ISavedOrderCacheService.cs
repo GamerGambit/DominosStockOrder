@@ -4,9 +4,9 @@ namespace DominosStockOrder.Server.Services
 {
     public interface ISavedOrderCacheService
     {
-        void SetOrderedItems(IEnumerable<StockOrderResponseItemVM> items);
-        IEnumerable<StockOrderResponseItemVM> GetOrderedItems();
+        void SetSavedOrder(StockOrderResponseVM order);
+        StockOrderResponseVM GetSavedOrder();
         void Clear();
-        bool IsEmpty();
+        bool HasSavedOrder();
     }
 }

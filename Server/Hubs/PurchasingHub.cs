@@ -111,7 +111,7 @@ namespace DominosStockOrder.Server.Hubs
             builder.Append("<th>Multiplier</th>");
             builder.Append("</tr></thead><tbody>");
 
-            foreach (var item in _savedOrderCache.GetOrderedItems().OrderBy(i => i.PulseCode))
+            foreach (var item in _savedOrderCache.GetSavedOrder().Items.OrderBy(i => i.PulseCode))
             {
                 var invItem = await _context.InventoryItems.FindAsync(item.PulseCode);
                 var inStore = _consolidatedInventory.GetItemEndingInventory(item.PulseCode);

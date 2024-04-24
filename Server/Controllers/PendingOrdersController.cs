@@ -68,10 +68,10 @@ namespace DominosStockOrder.Server.Controllers
         [HttpPost]
         public async Task SaveOrder(StockOrderResponseVM order)
         {
-            if (!_savedOrderCache.IsEmpty())
+            if (_savedOrderCache.HasSavedOrder())
                 return;
 
-            _savedOrderCache.SetOrderedItems(order.Items);
+            _savedOrderCache.SetSavedOrder(order);
 
             await _hub.Clients.All.PlaceOrder(new OrderResponse
             {
