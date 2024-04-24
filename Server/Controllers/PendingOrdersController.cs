@@ -87,8 +87,8 @@ namespace DominosStockOrder.Server.Controllers
         [HttpGet("Check")]
         public async Task Check()
         {
-            // No pending order, do nothing
-            if (!_pendingOrdersCache.HasPendingOrder())
+            // No pending order or pending order is not for today, do nothing
+            if (!_pendingOrdersCache.HasPendingOrder() || _pendingOrdersCache.GetOrders().First().OrderDate.Date != DateTime.Now.Date)
                 return;
 
             // If an order was successfully saved, do nothing
