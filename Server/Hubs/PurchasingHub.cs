@@ -77,6 +77,26 @@ namespace DominosStockOrder.Server.Hubs
         {
             ++_numClients;
             _statusService.IsConnectedToBrowser = true;
+
+            _logger.LogInformation("New browser connection");
+
+            // Try to send any pending orders.
+            if (_savedOrderCache.HasSavedOrder())
+            {
+                _logger.LogInformation("Saved order cached, attempting to send");
+
+                var order = _savedOrderCache.GetSavedOrder();
+                Clients.Caller.PlaceOrder(new OrderResponse
+                {
+                    PurchaseOrderId = order.PurchaseOrderId,
+                    Items = order.Items.Select(i => new OrderResponseItem
+                    {
+                        PurchaseOrderItemId = i.PurchaseOrderItemId,
+                        Override = i.Override
+                    })
+                });
+            }
+
             return Task.CompletedTask;
         }
 
