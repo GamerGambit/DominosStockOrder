@@ -58,6 +58,8 @@ namespace DominosStockOrder.Server.Hubs
 
         public async Task OrderSuccessful()
         {
+            _logger.LogInformation("Order placed successfully");
+
             _statusService.IsOrderSuccessful = true;
             _statusService.OrderError = string.Empty;
 
@@ -68,6 +70,8 @@ namespace DominosStockOrder.Server.Hubs
 
         public async Task OrderFailed(string error)
         {
+            _logger.LogError("Order was unsuccessully: {error}", error);
+
             _statusService.IsOrderSuccessful = false;
             _statusService.OrderError = error;
             _savedOrderCache.Clear();
