@@ -71,6 +71,9 @@ namespace DominosStockOrder.Server.Controllers
             if (_savedOrderCache.HasSavedOrder())
                 return;
 
+            _status.IsOrderSuccessful = null;
+            _status.OrderError = string.Empty;
+
             _savedOrderCache.SetSavedOrder(order);
 
             await _hub.Clients.All.PlaceOrder(new OrderResponse
