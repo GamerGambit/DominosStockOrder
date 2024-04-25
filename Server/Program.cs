@@ -43,6 +43,7 @@ namespace DominosStockOrder.Server
             builder.Services.AddSendGrid(options => options.ApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY"));
             builder.Services.AddSingleton<ISavedOrderCacheService, SavedOrderCacheService>();
             builder.Services.AddSingleton<Status>();
+            builder.Services.AddHostedService<SeleniumService>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -55,7 +56,7 @@ namespace DominosStockOrder.Server
             {
                 options.AddDefaultPolicy(builder =>
                 {
-                    builder.WithOrigins("https://purchasing.dominos.com.au")
+                    builder.WithOrigins("https://dominos-pizza.login.go.sohacloud.net", "https://purchasing.dominos.com.au")
                     .AllowAnyHeader()
                     .WithMethods("GET", "POST")
                     .AllowCredentials();
