@@ -1,4 +1,3 @@
-// These could probably be sent through SignalR for minimal setup
 const dcId = "74804ede-cfef-41fc-aad6-f5f646fe4508"; // Americold DC ID
 
 let connection;

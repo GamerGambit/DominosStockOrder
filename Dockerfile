@@ -8,11 +8,22 @@ RUN cd /app/ \
 COPY . /app
 RUN cd /app/Server \
  && dotnet build DominosStockOrder.Server.csproj -c Release -o /app/build \
- && dotnet publish DominosStockOrder.Server.csproj -c Release -o /app/publish /p:UseAppHost=false
+ && dotnet publish DominosStockOrder.Server.csproj -c Release -p:PublishChromeDriver=true -o /app/publish /p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 as final
-copy --from=build /app/publish /app
+COPY --from=build /app/publish /app
+
+RUN apt update
+RUN apt install -y --no-install-recommends wget gnupg2
+
+# Get Chrome
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
+RUN sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+RUN apt-get update
+RUN apt-get install -y google-chrome-stable
+
 EXPOSE 80
 EXPOSE 443
+EXPOSE 9222
 WORKDIR /app
 ENTRYPOINT ["dotnet", "DominosStockOrder.Server.dll"]
