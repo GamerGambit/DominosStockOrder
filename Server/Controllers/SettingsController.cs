@@ -21,7 +21,28 @@ public class SettingsController : ControllerBase
     }
 
     [HttpGet]
-    public IEnumerable<InventoryItemVM> Get()
+    public async Task<SettingsVM> Get()
+    {
+        var settings = _context.Settings.First();
+
+        return new SettingsVM
+        {
+            NumFoodTheoWeeks = settings.NumFoodTheoWeeks,
+        };
+    }
+
+    [HttpPut]
+    public async Task Put(SettingsVM settingsVM)
+    {
+        var settings = _context.Settings.First();
+
+        settings.NumFoodTheoWeeks = settingsVM.NumFoodTheoWeeks;
+
+        await _context.SaveChangesAsync();
+    }
+
+    [HttpGet("Items")]
+    public IEnumerable<InventoryItemVM> GetItems()
     {
         return _context.InventoryItems.Select(i => new InventoryItemVM
         {
@@ -37,8 +58,8 @@ public class SettingsController : ControllerBase
         });
     }
 
-    [HttpPut]
-    public async Task<IActionResult> Put(IEnumerable<InventoryItemVM> items)
+    [HttpPut("Items")]
+    public async Task<IActionResult> PutItems(IEnumerable<InventoryItemVM> items)
     {
         foreach (var item in items)
         {
