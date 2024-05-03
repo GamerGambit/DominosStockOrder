@@ -18,5 +18,6 @@ namespace DominosStockOrder.Server.Models
         }
 
         public DbSet<InventoryItem> InventoryItems { get; set; }
+        public DbSet<Settings> Settings { get; set; }
     }
 }
