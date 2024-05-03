@@ -142,7 +142,7 @@ namespace DominosStockOrder.Server.Hubs
                 var weeklyTheos = _consolidatedInventory.GetItemFoodTheos(item.PulseCode).Select(x => x.IdealUsage).ToList();
 
                 var initialWeeklyTheo = invItem.InitialFoodTheo ?? 0;
-                var neededInitialTheos = Constants.NumFoodTheoWeeks - weeklyTheos.Count;
+                var neededInitialTheos = _context.Settings.First().NumFoodTheoWeeks - weeklyTheos.Count;
 
                 for(var i = 0; i < neededInitialTheos; ++i)
                 {

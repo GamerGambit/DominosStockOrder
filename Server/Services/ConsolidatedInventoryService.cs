@@ -1,4 +1,5 @@
-﻿using DominosStockOrder.Server.PulseApi;
+﻿using DominosStockOrder.Server.Models;
+using DominosStockOrder.Server.PulseApi;
 using DominosStockOrder.Shared;
 using DominosStockOrder.Shared.DTOs;
 using System.Text.RegularExpressions;
@@ -17,13 +18,15 @@ namespace DominosStockOrder.Server.Services
         private readonly ILogger<ConsolidatedInventoryService> _logger;
         private readonly Dictionary<string, List<ItemWeeklyFoodTheo>> _weeklyTheoDict = [];
         private readonly EndingInventoryData _endingInventoryData = new();
+        private readonly IServiceProvider _serviceProvider;
 
         private DateTime _processingWeekEnding;
 
-        public ConsolidatedInventoryService(IPulseApiClient pulse, ILogger<ConsolidatedInventoryService> logger)
+        public ConsolidatedInventoryService(IPulseApiClient pulse, ILogger<ConsolidatedInventoryService> logger, IServiceProvider serviceProvider)
         {
             _pulse = pulse;
             _logger = logger;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task FetchWeeklyFoodTheoAsync()
@@ -33,7 +36,11 @@ namespace DominosStockOrder.Server.Services
             // Reset before we process any food usage just in case
             _processingWeekEnding = new();
 
-            for (int i = 0; i < Constants.NumFoodTheoWeeks; i++)
+            var scope = _serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StockOrderContext>();
+            var settings = context.Settings.First();
+
+            for (int i = 0; i < settings.NumFoodTheoWeeks; i++)
             {
                 try
                 {

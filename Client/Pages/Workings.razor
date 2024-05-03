@@ -4,6 +4,7 @@
 @using DominosStockOrder.Shared
 @using DominosStockOrder.Shared.ViewModels
 @inject FoodTheoService FoodTheo
+@inject SettingsService Settings
 
 <PageTitle>Workings</PageTitle>
 
@@ -41,7 +42,7 @@ else
 
         @if (_showWeeklyTheo)
         {
-            for (var i = 0; i < Constants.NumFoodTheoWeeks; ++i)
+            for (var i = 0; i < Settings.NumFoodTheoWeeks; ++i)
             {
                 var today = DateTime.Now;
                 var weekEnding = today.AddDays(-(int)today.DayOfWeek).AddDays(-7 * i);

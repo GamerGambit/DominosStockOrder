@@ -10,14 +10,16 @@ namespace DominosStockOrder.Client.Services
         private readonly ILogger<FinalOrderCalculatorService> _logger;
         private readonly IExtraInventoryService _extraInventoryService;
         private readonly ITransferService _transferService;
+        private readonly SettingsService _settings;
 
-        public FinalOrderCalculatorService(IInventoryItemService inventoryItemService, FoodTheoService foodTheoService, ILogger<FinalOrderCalculatorService> logger, IExtraInventoryService extraInventoryService, ITransferService transferService)
+        public FinalOrderCalculatorService(IInventoryItemService inventoryItemService, FoodTheoService foodTheoService, ILogger<FinalOrderCalculatorService> logger, IExtraInventoryService extraInventoryService, ITransferService transferService, SettingsService settings)
         {
             _inventoryItemService = inventoryItemService;
             _foodTheoService = foodTheoService;
             _logger = logger;
             _extraInventoryService = extraInventoryService;
             _transferService = transferService;
+            _settings = settings;
         }
 
         public async Task<int> CalculateFinalOrder(string pulseCode, int inTransit)
@@ -60,9 +62,9 @@ namespace DominosStockOrder.Client.Services
                 }
             }
 
-            var numInitialTheoWeeks = Constants.NumFoodTheoWeeks - working.WeeklyFoodTheo.Count;
+            var numInitialTheoWeeks = _settings.NumFoodTheoWeeks - working.WeeklyFoodTheo.Count;
             var initialWeeklyTheo = (item.InitialFoodTheo ?? 0);
-            var defaultWeeklyTheo = initialWeeklyTheo * Constants.NumFoodTheoWeeks;
+            var defaultWeeklyTheo = initialWeeklyTheo * _settings.NumFoodTheoWeeks;
             var roundedTransfer = Math.Ceiling(transferred / item.PackSize) * item.PackSize;
             var currentStock = working.EndingInventory - roundedTransfer;
 
