@@ -76,7 +76,7 @@ function startSignalRConnection() {
         .then(() => {
             console.log("Connected to SignalR Hub");
         })
-        .then(() => main())
+        .then(() => sendPendingOrders())
         .catch(err => {
             console.error("SignalR Connection Error:", err);
             setTimeout(startSignalRConnection, 5000);
@@ -152,10 +152,11 @@ async function fetchAndProcessPendingOrders()
     })));
 }
 
-async function sendPendingOrders()
+function sendPendingOrders()
 {
-    let pending = await fetchAndProcessPendingOrders();
-    await connection.invoke("SetPendingOrders", pending);
+    console.log("Sending pending orders...");
+    return fetchAndProcessPendingOrders()
+        .then(pending => connection.invoke("SetPendingOrders", pending));
 }
 
 async function getItemsInTransit(orderDate)
@@ -180,6 +181,7 @@ async function getItemsInTransit(orderDate)
 
 function login()
 {
+    console.log("Logging in...");
     let usernameElement = document.querySelector("#username");
     usernameElement.value = username;
     usernameElement.dispatchEvent(new Event("input", { bubbles: true }));
@@ -195,18 +197,16 @@ function login()
 async function main()
 {
     if (window.location.href.includes("login")) {
-        console.log("Logging in...");
         login();
     }
     else {
-        console.log("Sending pending orders...");
-        await sendPendingOrders();
+        injectSignalR();
     }
 }
 
 (function() {
     // 5 second time out to make sure the page is loaded.
     // When the page is initially visited, a JS router will redirect to login
-    setTimeout(injectSignalR, 5000);
+    setTimeout(main, 5000);
 })();
 
