@@ -1,4 +1,5 @@
 const dcId = "74804ede-cfef-41fc-aad6-f5f646fe4508"; // Americold DC ID
+const heartbeatSeconds = 30 * 60 * 1000; // 30 minutes in milliseconds
 
 let connection;
 
@@ -194,6 +195,24 @@ function login()
     submit.click();
 }
 
+async function heartbeat()
+{
+    try {
+        let res = await fetch("https://purchasing.dominos.com.au/purchaseorders/pending?storeId=" + storeId);
+
+        if (res.ok) {
+            console.log("Heartbeat successful at: ", new Date());
+            setTimeout(heartbeat, heartbeatSeconds);
+        }
+        else {
+            res.text().then(text => console.error("Heartbeat request failed:", text));
+        }
+    }
+    catch (error) {
+        console.error("Heartbeat error:", error);
+    }
+}
+
 async function main()
 {
     if (window.location.href.includes("login")) {
@@ -201,6 +220,7 @@ async function main()
     }
     else {
         injectSignalR();
+        setTimeout(heartbeat, heartbeatSeconds);
     }
 }
 
