@@ -36,9 +36,16 @@ public class SettingsController : ControllerBase
     {
         var settings = _context.Settings.First();
 
+        var bRefetchWeeklyTheo = settings.NumFoodTheoWeeks != settingsVM.NumFoodTheoWeeks;
+
         settings.NumFoodTheoWeeks = settingsVM.NumFoodTheoWeeks;
 
         await _context.SaveChangesAsync();
+
+        if (bRefetchWeeklyTheo)
+        {
+            await _consolidatedInventory.FetchWeeklyFoodTheoAsync();
+        }
     }
 
     [HttpGet("Items")]
