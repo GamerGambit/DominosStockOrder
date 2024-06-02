@@ -28,6 +28,6 @@
             NumFoodTheoWeeks = Settings.NumFoodTheoWeeks
         };
 
-        await Http.PostAsJsonAsync("/Settings", vm);
+        await Http.PutAsJsonAsync("/api/Settings", vm);
     }
 }
