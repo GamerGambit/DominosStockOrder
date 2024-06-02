@@ -24,6 +24,7 @@ namespace DominosStockOrder.Client
 
             await app.Services.GetRequiredService<FoodTheoService>().FetchFoodTheoAsync();
             await app.Services.GetRequiredService<IInventoryItemService>().FetchInventoryDataAsync();
+            await app.Services.GetRequiredService<SettingsService>().FetchFromServer();
 
             await app.RunAsync();
         }
