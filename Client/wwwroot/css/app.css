@@ -170,3 +170,8 @@ code {
 .validationContainer:not(:has(.validation-errors)) {
     display: none !important;
 }
+
+.settings-nav
+{
+    height: fit-content;
+}
