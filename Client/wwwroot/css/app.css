@@ -170,3 +170,7 @@ code {
 .validationContainer:not(:has(.validation-errors)) {
     display: none !important;
 }
+
+.working.row:hover {
+    outline: 1px solid black;
+}
