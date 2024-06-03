@@ -163,6 +163,7 @@ code {
         border: none;
         background-color: initial;
         color: black;
+        text-transform: uppercase;
     }
 }
 
