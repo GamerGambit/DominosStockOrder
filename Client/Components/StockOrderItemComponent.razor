@@ -79,10 +79,7 @@
         {
             _needsInitialFoodTheo = workings.WeeklyFoodTheo.Count < Constants.NumFoodTheoWeeks && !_inventoryItem.InitialFoodTheo.HasValue;
         }
-    }
 
-    protected override void OnParametersSet()
-    {
         _problems.Clear();
         _bErrorOccurred = false;
         Item.Override ??= Item.Suggested;
