@@ -17,12 +17,14 @@ namespace DominosStockOrder.Client
             builder.Services.AddSingleton<IFinalOrderCalculatorService, FinalOrderCalculatorService>();
             builder.Services.AddSingleton<IExtraInventoryService, ExtraInventoryService>();
             builder.Services.AddSingleton<ITransferService, TransferService>();
+            builder.Services.AddSingleton<SettingsService>();
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
             var app = builder.Build();
 
             await app.Services.GetRequiredService<FoodTheoService>().FetchFoodTheoAsync();
             await app.Services.GetRequiredService<IInventoryItemService>().FetchInventoryDataAsync();
+            await app.Services.GetRequiredService<SettingsService>().FetchFromServer();
 
             await app.RunAsync();
         }

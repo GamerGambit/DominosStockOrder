@@ -5,6 +5,7 @@
 @inject IInventoryItemService Inventory
 @inject FoodTheoService FoodTheo
 @inject HttpClient Http
+@inject SettingsService Settings
 
 <div class="row mb-1 striped @ExtraClass">
     <div class="col-1 my-auto pulseCode">@Item.PulseCode</div>
@@ -77,7 +78,7 @@
 
         if (workings is not null)
         {
-            _needsInitialFoodTheo = workings.WeeklyFoodTheo.Count < Constants.NumFoodTheoWeeks && !_inventoryItem.InitialFoodTheo.HasValue;
+            _needsInitialFoodTheo = workings.WeeklyFoodTheo.Count < Settings.NumFoodTheoWeeks && !_inventoryItem.InitialFoodTheo.HasValue;
         }
 
         _problems.Clear();

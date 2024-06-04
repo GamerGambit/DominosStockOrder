@@ -1,9 +1,13 @@
-﻿@page "/Settings"
+﻿@page "/Settings/Items"
 @using DominosStockOrder.Client.Components
 @using DominosStockOrder.Shared.ViewModels
 @inject HttpClient Http
 
-<PageTitle>Settings</PageTitle>
+<PageTitle>Settings | Items</PageTitle>
+
+<div class="d-flex">
+
+<SettingsNavComponent/>
 
 <div class="container mb-3">
 @if (_bLoading)
@@ -37,6 +41,8 @@ else
 }
 </div>
 
+</div>
+
 @code {
     private bool _bLoading = true;
     private IEnumerable<InventoryItemVM>? _items;
@@ -44,12 +50,12 @@ else
     protected override async Task OnInitializedAsync()
     {
         _bLoading = true;
-        _items = await Http.GetFromJsonAsync<IEnumerable<InventoryItemVM>>("/api/Settings");
+        _items = await Http.GetFromJsonAsync<IEnumerable<InventoryItemVM>>("/api/Settings/Items");
         _bLoading = false;
     }
 
     private async Task SaveChanges()
     {
-        await Http.PutAsJsonAsync("/api/Settings", _items);
+        await Http.PutAsJsonAsync("/api/Settings/Items", _items);
     }
 }

@@ -12,6 +12,7 @@
 @inject ITransferService Transfer
 @inject FoodTheoService FoodTheo
 @inject HttpClient Http
+@inject SettingsService Settings
 @implements IDisposable
 
 <div id="editInTransitContainer" class="form-check">
@@ -234,7 +235,7 @@
             }
 
             var working = FoodTheo.GetWorkingsFromPulseCode(item.PulseCode);
-            var needsInitialWeeklyTheo = working.WeeklyFoodTheo.Count < Constants.NumFoodTheoWeeks;
+            var needsInitialWeeklyTheo = working.WeeklyFoodTheo.Count < Settings.NumFoodTheoWeeks;
             if (needsInitialWeeklyTheo && !inventoryItem.InitialFoodTheo.HasValue)
             {
                 messageStore?.Add(() => working.WeeklyFoodTheo, $"{item.Description} needs initial weekly food theo");

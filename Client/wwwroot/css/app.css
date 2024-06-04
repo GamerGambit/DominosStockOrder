@@ -175,6 +175,11 @@ code {
     display: none !important;
 }
 
+.settings-nav
+{
+    height: fit-content;
+}
+
 .hoveroutline:hover {
     outline: 1px solid black;
 }

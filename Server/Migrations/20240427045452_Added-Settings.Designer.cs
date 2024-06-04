@@ -3,6 +3,7 @@ using System;
 using DominosStockOrder.Server.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DominosStockOrder.Server.Migrations
 {
     [DbContext(typeof(StockOrderContext))]
-    partial class StockOrderContextModelSnapshot : ModelSnapshot
+    [Migration("20240427045452_Added-Settings")]
+    partial class AddedSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.3");
@@ -54,14 +57,8 @@ namespace DominosStockOrder.Server.Migrations
 
             modelBuilder.Entity("DominosStockOrder.Server.Models.Settings", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("NumFoodTheoWeeks")
                         .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
 
                     b.ToTable("Settings");
                 });
