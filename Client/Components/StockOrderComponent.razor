@@ -14,7 +14,7 @@
 @inject HttpClient Http
 @implements IDisposable
 
-<div class="form-check">
+<div id="editInTransitContainer" class="form-check">
     <input type="checkbox" class="form-check-input" @bind="@_editInTransit" id="editInTransit" />
     <label for="editInTransit" class="form-check-label">Edit In Transit</label>
 </div>
@@ -24,7 +24,7 @@
 <EditForm EditContext="@editContext" OnValidSubmit="@SaveOrderToPortal">
     @if (!string.IsNullOrWhiteSpace(_statusText))
     {
-        <div class="alert alert-info">
+        <div id="status1" class="alert alert-info">
             @_statusText
         </div>
     }
@@ -48,7 +48,7 @@
     <div class="row my-3">
     @if (!string.IsNullOrWhiteSpace(_statusText))
     {
-        <div class="col">
+        <div id="status2" class="col">
             <p class="alert alert-info text-center">@_statusText</p>
         </div>
     }

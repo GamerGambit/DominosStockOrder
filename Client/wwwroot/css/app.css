@@ -138,7 +138,10 @@ code {
     #manualItems .row:first-child,
     #manualItems .pulseCode, #manualItems .doublecheck, #manualItems .problemText, #manualItems .initialFoodTheo,
     #saveOrderToPortalButton,
-    .validation-errors {
+    .validation-errors,
+    #editInTransitContainer,
+    #status1,
+    #status2 {
         display: none !important;
     }
 
@@ -148,7 +151,7 @@ code {
     }
 
     article > .container {
-        width: max-content !important;
+        max-width: 100% !important;
     }
 
     .finalOrder > input, .finalOrder > input {
