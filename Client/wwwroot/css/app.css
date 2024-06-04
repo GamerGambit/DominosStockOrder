@@ -175,6 +175,6 @@ code {
     display: none !important;
 }
 
-.working.row:hover {
+.hoveroutline:hover {
     outline: 1px solid black;
 }

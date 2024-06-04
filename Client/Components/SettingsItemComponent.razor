@@ -1,6 +1,6 @@
 ﻿@using DominosStockOrder.Shared.ViewModels
 
-<div class="d-flex row mt-1">
+<div class="d-flex row mt-1 hoveroutline">
     <div class="col-1">@Item.Code</div>
     <div class="col">@Item.Description</div>
     <div class="col"><input type="text" class="form-control" inputmode="numeric" placeholder="Pack size" @bind="@Item.PackSize" disabled="@Item.ManualCount" /></div>
