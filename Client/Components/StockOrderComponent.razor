@@ -160,6 +160,11 @@
                 _portalWarnings.Append("is a new item");
                 comma = true;
             }
+
+            if (item.IsNewInventory || item.IsItemEnabledRecently)
+            {
+                _portalWarnings.Append(" (food theo may need to be reset)");
+            }
         }
 
         StateHasChanged();

@@ -123,6 +123,12 @@
         {
             _problems.Add("Item code changed recently");
         }
+
+        if (Item.IsNewInventory || Item.IsItemEnabledRecently)
+        {
+            _inventoryItem.DoubleCheck = true;
+            _problems.Add("Item was added/enabled recently and food theo may need to be reset.");
+        }
     }
 
     private async Task OnWeeklyFoodTheoSet()
