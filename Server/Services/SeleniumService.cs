@@ -52,7 +52,7 @@ namespace DominosStockOrder.Server.Services
             options.AddArgument("--remote-debugging-address=0.0.0.0");
             options.AddArgument("--auto-open-devtools-for-tabs"); // Always do this for easier debugging
 
-            var service = ChromeDriverService.CreateDefaultService(/*"./chromedriver"*/);
+            var service = ChromeDriverService.CreateDefaultService("./chromedriver");
             service.AllowedIPAddresses = " "; // allow anyone to debug
             _driver = new ChromeDriver(service, options);
 
