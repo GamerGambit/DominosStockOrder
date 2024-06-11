@@ -73,4 +73,36 @@ public class FoodTheoController : Controller
 
         return ret;
     }
+
+    [HttpPost("custom")]
+    public async Task<IEnumerable<FoodTheoVM>> GetCustom([FromBody] IEnumerable<DateRange> dateRanges)
+    {
+        var data = new List<FoodTheoVM>();
+
+        foreach (var range in dateRanges)
+        {
+            var inventories = await _pulseApiClient.ConsolidatedInventoryAsync(range.Start, range.End);
+            var vmInventories = new List<InventoryItemFoodTheoVM>();
+
+            foreach (var inv in inventories)
+            {
+                var match = Regex.Match(inv.Description, @"^\(([\d\w]+)\) (.*)$");
+                var code = match.Groups[1].Value;
+
+                vmInventories.Add(new InventoryItemFoodTheoVM
+                {
+                    PulseCode = code,
+                    IdealUsage = inv.IdealUsage
+                });
+            }
+
+            data.Add(new FoodTheoVM
+            {
+                WeekEnding = range.End,
+                ItemTheos = vmInventories
+            });
+        }
+
+        return data;
+    }
 }

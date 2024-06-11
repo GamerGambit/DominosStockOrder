@@ -6,14 +6,14 @@
 @inject IFinalOrderCalculatorService FinalOrder
 @inject IExtraInventoryService ExtraInventory
 @inject ITransferService Transfer
-@inject SettingsService Settings
+@inject FoodTheoService FoodTheo
 
 <div class="row hoveroutline">
     <div class="col-2">@_item.Description</div>
 
     @if (ShowWeeklyTheo)
     {
-        for (var i = 0; i < Settings.NumFoodTheoWeeks; ++i)
+        for (var i = 0; i < FoodTheo.NumWorkings; ++i)
         {
             var content = 0.ToString("0.00");
 

@@ -42,7 +42,7 @@ else
 
         @if (_showWeeklyTheo)
         {
-            for (var i = 0; i < Settings.NumFoodTheoWeeks; ++i)
+            for (var i = 0; i < FoodTheo.NumWorkings; ++i)
             {
                 var today = DateTime.Now;
                 var weekEnding = today.AddDays(-(int)today.DayOfWeek).AddDays(-7 * i);

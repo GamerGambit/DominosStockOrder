@@ -236,7 +236,7 @@
 
             var working = FoodTheo.GetWorkingsFromPulseCode(item.PulseCode);
             var needsInitialWeeklyTheo = working.WeeklyFoodTheo.Count < Settings.NumFoodTheoWeeks;
-            if (needsInitialWeeklyTheo && !inventoryItem.InitialFoodTheo.HasValue)
+            if (FoodTheo.EnableItemFoodTheoCheck && needsInitialWeeklyTheo && !inventoryItem.InitialFoodTheo.HasValue)
             {
                 messageStore?.Add(() => working.WeeklyFoodTheo, $"{item.Description} needs initial weekly food theo");
             }

@@ -36,7 +36,7 @@
             </div>
         }
     }
-    @if (_needsInitialFoodTheo)
+    @if (_needsInitialFoodTheo && FoodTheo.EnableItemFoodTheoCheck)
     {
         <div class="row mb-3 initialFoodTheo">
             <span class="d-block">Insufficient food theo data. Please enter an initial weekly theo</span>

@@ -22,9 +22,10 @@ namespace DominosStockOrder.Client
 
             var app = builder.Build();
 
+            // Fetch settings before food theo so we can use `NumFoodTheoWeeks`
+            await app.Services.GetRequiredService<SettingsService>().FetchFromServer();
             await app.Services.GetRequiredService<FoodTheoService>().FetchFoodTheoAsync();
             await app.Services.GetRequiredService<IInventoryItemService>().FetchInventoryDataAsync();
-            await app.Services.GetRequiredService<SettingsService>().FetchFromServer();
 
             await app.RunAsync();
         }

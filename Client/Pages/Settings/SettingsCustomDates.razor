@@ -1,0 +1,113 @@
+﻿@page "/Settings/CustomDates"
+@using DominosStockOrder.Client.Components
+@using DominosStockOrder.Client.Services
+@using DominosStockOrder.Shared.ViewModels
+@inject HttpClient Http
+@inject FoodTheoService FoodTheo
+
+<PageTitle>Settings | Custom Dates</PageTitle>
+
+<div class="d-flex">
+    <SettingsNavComponent/>
+    <div class="container">
+        <div class="alert alert-warning">
+            <p class="mb-0">Ensuring items have enough food theo data is disabled when using custom dates. Current products that were not sold during the selected periods will not have food theo data.</p>
+        </div>
+
+        <div class="alert alert-info">
+            <p class="mb-0">These custom date overrides are temporary for this session only and refreshing the page will reset the dates.</p>
+        </div>
+
+        <div class="row">
+            <div class="col">Food Theo Dates:</div>
+            <div class="col form-check form-switch">
+                <input type="checkbox" class="form-check-input" id="customDatesSwitch" @bind-value="@Model!.UseCustomDates" />
+                <label for="customDatesSwitch" class="form-check-label">Use Custom Dates</label>
+            </div>
+        </div>
+
+        @if (Model!.UseCustomDates)
+        {
+        <div>
+            @foreach (var date in Model!.Dates)
+            {
+                <div class="row input-group mb-3">
+                    <div class="col"><input type="date" class="form-control" @bind-value="@date.Start" /></div>
+                    <div class="col"><input type="date" class="form-control" @bind-value="@date.End" /></div>
+                    <div class="col">
+                        <button class="btn btn-danger" @onclick="() => Model!.Dates.Remove(date)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            }
+
+            <button class="btn btn-success" @onclick="@AddNewDate">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2" />
+                </svg>
+            </button>
+        </div>
+        }
+
+        @if (FoodTheo.Loading)
+        {
+            <div class="alert alert-primary mt-3">
+                <p class="pb-0">Fetching new food theo...</p>
+            </div>
+        }
+
+        <div class="row mt-3">
+            <button class="btn btn-primary" disabled="@(!showSaveButton)" @onclick="SaveDates">Set Dates</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private class FoodTheoDaysModel
+    {
+        public bool UseCustomDates { get; set; } = false;
+        public List<DateRange> Dates { get; } = new();
+    }
+
+    private FoodTheoDaysModel? Model { get; set; }
+    private bool showSaveButton = false;
+
+    protected override void OnInitialized()
+    {
+        Model ??= new();
+    }
+
+    private void ToggleUseCustomDates()
+    {
+        Model!.UseCustomDates = !Model!.UseCustomDates;
+        showSaveButton = true;
+    }
+
+    private void AddNewDate()
+    {
+        Model!.Dates.Add(new DateRange
+        {
+            Start = DateTime.Now,
+            End = DateTime.Now
+        });
+
+        showSaveButton = true;
+    }
+
+    private async Task SaveDates()
+    {
+        showSaveButton = false;
+
+        if (Model!.UseCustomDates)
+        {
+            await FoodTheo.OverrideFoodTheoWithDates(Model!.Dates);
+        }
+        else
+        {
+            await FoodTheo.FetchFoodTheoAsync();
+        }
+    }
+}
