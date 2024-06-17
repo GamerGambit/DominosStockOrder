@@ -142,6 +142,8 @@
             comma = false;
             _portalWarnings.Append($"{item.Description} ");
 
+            // We ignore `IsItemCodeChangedRecently` because it doesnt mean anything to us.
+
             if (item.IsItemEnabledRecently)
             {
                 _portalWarnings.Append("was enabled recently");
