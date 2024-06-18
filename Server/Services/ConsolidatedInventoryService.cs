@@ -69,6 +69,12 @@ namespace DominosStockOrder.Server.Services
                 var match = Regex.Match(itemUsage.Description, @"^\(([\d\w]+)\) (.*)$");
                 var code = match.Groups[1].Value;
 
+                if (!match.Success)
+                {
+                    _logger.LogWarning("Failed to match {description}, skipping.", itemUsage.Description);
+                    continue;
+                }
+
                 _endingInventoryData.EndingInventoryDict.Add(code, itemUsage.EndingInventory);
             }
         }
