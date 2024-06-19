@@ -64,6 +64,10 @@ public class FoodTheoController : Controller
             var match = Regex.Match(inv.Description, @"^\(([\d\w]+)\) (.*)$");
             var code = match.Groups[1].Value;
 
+            // Failed to match description so skip it. Its probably not useful to us anyway
+            if (!match.Success)
+                continue;
+
             ret.Add(new ExtraInventoryVM
             {
                 PulseCode = code,
