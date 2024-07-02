@@ -43,7 +43,7 @@ namespace DominosStockOrder.Server
             builder.Services.AddSendGrid(options => options.ApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY"));
             builder.Services.AddSingleton<ISavedOrderCacheService, SavedOrderCacheService>();
             builder.Services.AddSingleton<Status>();
-            builder.Services.AddHostedService<SeleniumService>();
+            builder.Services.AddSingleton<SeleniumService>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -65,6 +65,20 @@ namespace DominosStockOrder.Server
 
             var app = builder.Build();
             app.UseResponseCompression();
+
+            app.Lifetime.ApplicationStarted.Register(() =>
+            {
+                using var scope = app.Services.CreateScope();
+                var seleniumService = scope.ServiceProvider.GetRequiredService<SeleniumService>();
+                seleniumService.StartBrowser();
+            });
+
+            app.Lifetime.ApplicationStopping.Register(() =>
+            {
+                using var scope = app.Services.CreateScope();
+                var seleniumService = scope.ServiceProvider.GetRequiredService<SeleniumService>();
+                seleniumService.StopBrowser();
+            });
 
             using (var scope = app.Services.CreateScope())
             {

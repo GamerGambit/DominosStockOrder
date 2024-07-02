@@ -55,7 +55,7 @@ function bindSignalREndpoints()
 function createSignalRHubConnection()
 {
     connection = new signalR.HubConnectionBuilder()
-        .withUrl(stockServer + "/purchasinghub")
+        .withUrl("http://localhost:8080/purchasinghub")
         .configureLogging(signalR.LogLevel.Information)
         .build();
 
@@ -88,7 +88,7 @@ function injectSignalR()
 {
     let script = document.createElement("script");
     script.type = "text/javascript";
-    script.src = stockServer + "/lib/signalr/signalr.js";
+    script.src = "http://localhost:8080/lib/signalr/signalr.js";
     script.onload = function () {
         console.log("SignalR script loaded...attempting connection");
         createSignalRHubConnection();
